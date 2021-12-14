@@ -1,0 +1,20 @@
+# permissions for end users to view ipwhitelistconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ipwhitelistconfig-viewer-role
+rules:
+  - apiGroups:
+      - ingress.security.moulick
+    resources:
+      - ipwhitelistconfigs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ingress.security.moulick
+    resources:
+      - ipwhitelistconfigs/status
+    verbs:
+      - get

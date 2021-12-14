@@ -1,0 +1,16 @@
+domain: moulick
+layout:
+- go.kubebuilder.io/v3
+projectName: ingress-whitelister
+repo: github.com/Moulick/ingress-whitelister
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: moulick
+  group: ingress.security
+  kind: IPWhitelistConfig
+  path: github.com/Moulick/ingress-whitelister/api/v1beta1
+  version: v1beta1
+version: "3"
