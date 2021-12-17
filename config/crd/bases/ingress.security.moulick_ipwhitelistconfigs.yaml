@@ -41,6 +41,7 @@ spec:
                   description: IPGroup is a group of IPs with a set expiration time
                   properties:
                     cidrs:
+                      description: 'TODO: add ip validation'
                       items:
                         type: string
                       type: array

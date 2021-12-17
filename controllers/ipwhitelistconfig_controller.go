@@ -62,18 +62,17 @@ type IPWhitelistConfigReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-
 	var finalWhiteList []string
 
 	logo := log.FromContext(ctx).WithValues("ingress", req.NamespacedName)
 
+	// check if IPWhitelistConfig is specified
 	if r.IPWhitelistConfig == "" {
 		logo.Error(IPWhitelistConfigMissing, "Failed to reconcile as IPWhitelistConfigMissing")
 		return ctrl.Result{}, IPWhitelistConfigMissing
 	}
-
 	logo.Info("Reconciling Ingress")
-
+	// Fetch the IPWhitelistConfig instance
 	ruleSet, err := r.getRuleSet(ctx)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -86,9 +85,10 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		if client.IgnoreNotFound(err) != nil {
 			return ctrl.Result{}, err
 		}
+		// we can ignore not found error as requing the ingress will not help anyways
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-
+	// loop over all the rules and check if the labels match
 	for _, rule := range ruleSet.Spec.Rules {
 		selector, err := v1.LabelSelectorAsSelector(rule.Selector)
 		if err != nil {
@@ -132,16 +132,6 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *IPWhitelistConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	// TODO: add predicate filtering https://sdk.operatorframework.io/docs/building-operators/golang/references/event-filtering/
-
-	return ctrl.NewControllerManagedBy(mgr).
-		//For(&ingresssecurityv1beta1.IPWhitelistConfig{}).
-		For(&knet.Ingress{}).
-		Complete(r)
-}
-
 // getRuleSet retrieves the ruleSet configuration.
 func (r *IPWhitelistConfigReconciler) getRuleSet(ctx context.Context) (*ingresssecurityv1beta1.IPWhitelistConfig, error) {
 	var ruleSet ingresssecurityv1beta1.IPWhitelistConfig
@@ -181,4 +171,14 @@ func checkIPAddress(ip string) bool {
 		return false
 	}
 	return true
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *IPWhitelistConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// TODO: add predicate filtering https://sdk.operatorframework.io/docs/building-operators/golang/references/event-filtering/
+
+	return ctrl.NewControllerManagedBy(mgr).
+		//For(&ingresssecurityv1beta1.IPWhitelistConfig{}).
+		For(&knet.Ingress{}).
+		Complete(r)
 }
