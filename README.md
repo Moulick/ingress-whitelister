@@ -20,7 +20,8 @@ of IP addresses which should be whitelisted for the ingress
 
 Or take a look at the [Makefile](Makefile) for more advances use cases
 
-The docker image can be found on dockerhub [moulick/ingress-whitelister](https://hub.docker.com/r/moulick/ingress-whitelister)
+The docker image can be found on
+dockerhub [moulick/ingress-whitelister](https://hub.docker.com/r/moulick/ingress-whitelister)
 
 ## Examples
 
@@ -30,9 +31,18 @@ A fully defined sample of `IPWhitelistConfig` is given in the [config/samples](c
 
 1. Duplicate labels can cause hot looping and cause flip flopping in the annotations.
 2. Currently the operator reconciles only on ingress object
+3. If the CRD is changed, the whitelist will be updated in roughly 5 mins at the max
 
 ## TODO
 
-1. Add a webhook to validate IP addresses
-2. Add reconciler on `IPWhitelistConfig` as well
-3. Add a way to handle duplicate labels
+- Add a webhook to validate IP addresses
+- Add reconciler on `IPWhitelistConfig` as well
+- Add a way to handle duplicate labels
+
+## Development
+
+### Prerequisites
+
+- golang environment
+- docker (used for creating container images, etc.)
+- jq
