@@ -62,7 +62,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
+build: generate fmt vet jsonnet-crd ## Build manager binary.
 	go build -o bin/manager main.go
 
 .PHONY: run
@@ -86,22 +86,42 @@ ifndef ignore-not-found
   ignore-not-found = false
 endif
 
+bin: ## Create a bin folder for temp storage.
+	mkdir -p bin
+
+CRD_OUT = bin/crds.yaml
+.PHONY: crds
+crds: manifests kustomize ## Generate CRDs into the bin directory.
+	$(KUSTOMIZE) build config/crd > $(CRD_OUT)
+
+.PHONY: jsonnet-crd
+jsonnet-crd: yq jsonnet jsonnetfmt crds ## Generate CRDs in the form of jsonnet files.
+	$(YQ) eval -I=0 $(CRD_OUT) -o=json | jq -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
+
+.PHONY: bundle
+bundle: jsonnet-crd ## Generate deployment files into the bin directory.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default > bin/bundle.yaml
+
+#jsonnet-bundle: jsonnet-crd ## Generate deployment files in the form of jsonnet files.
+
 .PHONY: install
-install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+install: bin crds ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	kubectl apply -f $(CRD_OUT)
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/crd | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+uninstall: crds ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f $(CRD_OUT)
 
 .PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+deploy: bundle install ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	kubectl apply -f bin/manifests_out.yaml
 
 .PHONY: undeploy
-undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+undeploy: bundle uninstall ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	kubectl delete --ignore-not-found=$(ignore-not-found) -f bin/manifests_out.yaml
+
+##@ Install Dependencies
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
@@ -111,7 +131,22 @@ controller-gen: ## Download controller-gen locally if necessary.
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.10.0)
+
+JSONNET = $(shell pwd)/bin/jsonnet
+.PHONY: jsonnet
+jsonnet: ## Download jsonnet locally if necessary.
+	$(call go-get-tool,$(JSONNET),github.com/google/go-jsonnet/cmd/...@v0.18.0)
+
+JSONNET_FMT = $(shell pwd)/bin/jsonnetfmt
+.PHONY: jsonnetfmt
+jsonnetfmt: ## Download jsonnetfmt locally if necessary.
+	$(call go-get-tool,$(JSONNET_FMT),github.com/google/go-jsonnet/cmd/...@v0.18.0)
+
+YQ = $(shell pwd)/bin/yq
+.PHONY: yq
+yq: ## Download yq locally if necessary.
+	$(call go-get-tool,$(YQ),github.com/mikefarah/yq/v4@v4.16.2)
 
 ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: envtest
