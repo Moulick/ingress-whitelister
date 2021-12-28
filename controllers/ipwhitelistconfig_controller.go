@@ -122,8 +122,8 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{}, nil
 		}
 		// if the annotations are not nil, we can try to delete the annotation
-		var ok bool
-		if ing.Annotations, ok = deleteAnnotation(ing.Annotations, ruleSet.Spec.WhitelistAnnotation); !ok {
+		var deleted bool
+		if ing.Annotations, deleted = deleteAnnotation(ing.Annotations, ruleSet.Spec.WhitelistAnnotation); deleted {
 			if err = r.Update(ctx, ing); err != nil {
 				logo.Error(err, "failed to update the ingress")
 
