@@ -107,6 +107,8 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				}
 			}
 		}
+		// also we can break out after matching the first rule
+		break
 	}
 	finalWhiteListString := strings.Join(uniqueSorted(finalWhiteList), ",")
 	//logo.Info("Whitelist", "cidr", finalWhiteListString)
