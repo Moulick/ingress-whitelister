@@ -35,7 +35,7 @@ rules:
 - apiGroups:
   - networking.k8s.io
   resources:
-  - Ingress
+  - ingresses
   verbs:
   - get
   - list

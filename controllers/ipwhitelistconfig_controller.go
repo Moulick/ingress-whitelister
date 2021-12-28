@@ -50,7 +50,7 @@ type IPWhitelistConfigReconciler struct {
 //+kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/finalizers,verbs=update
 
-//+kubebuilder:rbac:groups=networking.k8s.io,resources=Ingress,verbs=get;list;watch;update;patch
+//+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
