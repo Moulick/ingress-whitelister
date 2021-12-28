@@ -148,7 +148,7 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 						{
 							Name:    "admin",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-							Cidrs: []string{
+							CIDRS: []string{
 								"192.169.0.1/32",
 								"10.0.3.4/18",
 							},
@@ -156,7 +156,7 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 						{
 							Name:    "public",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-							Cidrs: []string{
+							CIDRS: []string{
 								"0.0.0.0/0",
 								"::/0",
 							},
@@ -164,14 +164,14 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 						{
 							Name:    "devopsVPN",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-							Cidrs: []string{
+							CIDRS: []string{
 								"176.34.201.164/32",
 							},
 						},
 						{
 							Name:    "siteA-vpn",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-							Cidrs: []string{
+							CIDRS: []string{
 								"156.75.1.1/24",
 							},
 						},

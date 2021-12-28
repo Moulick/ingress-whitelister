@@ -18,7 +18,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -54,16 +53,19 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var port int
 	var ipWhitelistConfig string
 	var requeueInterval time.Duration
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.IntVar(&port, "port", 9443, "The port for the operator") //nolint:gomnd
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&ipWhitelistConfig, "ip-whitelist-config", "", "The name of the IPWhitelistConfig resource")
 	flag.DurationVar(&requeueInterval, "requeue-interval", 5*time.Minute, "The duration until the next untriggered reconciliation run")
+
 	opts := zap.Options{
 		Development: true,
 	}
@@ -75,7 +77,7 @@ func main() {
 	if ipWhitelistConfig == "" {
 		envvar := os.Getenv("IP_WHITELIST_CONFIG")
 		if envvar == "" {
-			setupLog.Error(fmt.Errorf("IP_WHITELIST_CONFIG parameter is not set"), "missing parameters to start up")
+			setupLog.Error(controllers.ErrIPWhitelistConfigMissing, "missing parameters to start up")
 			os.Exit(1)
 		}
 		ipWhitelistConfig = envvar
@@ -84,7 +86,7 @@ func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Port:                   port,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "460b0067.moulick",

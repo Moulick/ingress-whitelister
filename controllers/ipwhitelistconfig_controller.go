@@ -19,7 +19,6 @@ package controllers
 import (
 	"context"
 	"errors"
-	"net"
 	"sort"
 	"strings"
 	"time"
@@ -35,9 +34,7 @@ import (
 	ingresssecurityv1beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 )
 
-var (
-	IPWhitelistConfigMissing = errors.New("no IPWhitelistConfig specified")
-)
+var ErrIPWhitelistConfigMissing = errors.New("no IPWhitelistConfig specified")
 
 // IPWhitelistConfigReconciler reconciles a IPWhitelistConfig object
 type IPWhitelistConfigReconciler struct {
@@ -63,8 +60,9 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 	// check if IPWhitelistConfig is specified
 	if r.IPWhitelistConfig == "" {
-		logo.Error(IPWhitelistConfigMissing, "Failed to reconcile as IPWhitelistConfigMissing")
-		return ctrl.Result{}, IPWhitelistConfigMissing
+		logo.Error(ErrIPWhitelistConfigMissing, "Failed to reconcile as ErrIPWhitelistConfigMissing")
+
+		return ctrl.Result{}, ErrIPWhitelistConfigMissing
 	}
 	logo.Info("Reconciling Ingress")
 	// Fetch the IPWhitelistConfig instance
@@ -88,10 +86,12 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		selector, err := v1.LabelSelectorAsSelector(rule.Selector)
 		if err != nil {
 			logo.Error(err, "failed to convert the labelSelector to selector")
+
 			return ctrl.Result{}, err
 		}
 		// check if the ingress matches the defined selectors
 		if selector.Matches(labels.Set(ing.GetLabels())) {
+			logo.Info("Ingress matches the rule", "rule", rule.Name)
 			// Loop through the list of IPGroupSelector
 			for _, ipGroup := range rule.IPGroupSelector {
 				// Loop and check if the ipSets has any
@@ -99,32 +99,62 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 					if group.Name == ipGroup {
 						now := v1.Now()
 						if !group.Expires.Before(&now) {
-							finalWhiteList = append(finalWhiteList, group.Cidrs...)
+							logo.Info("ipGroup matched, added", "ipGroup", ipGroup)
+							finalWhiteList = append(finalWhiteList, group.CIDRS...)
 						}
+						logo.Info("ipGroup matched but expired", "ipGroup", ipGroup, "expiry", group.Expires.Format(time.RFC1123))
 						// as soon as we find the matching group, we can break out of the loop
 						break
 					}
 				}
 			}
+			// also we can break out after matching the first rule
+			break
 		}
-		// also we can break out after matching the first rule
-		break
 	}
-	finalWhiteListString := strings.Join(uniqueSorted(finalWhiteList), ",")
-	//logo.Info("Whitelist", "cidr", finalWhiteListString)
 
+	// if the finalWhiteList is empty, then no rule matched, so we can try to remove the annotation
+	if len(finalWhiteList) == 0 {
+		logo.Info("No rule matched, skipping and/or cleaning up")
+		if ing.Annotations == nil {
+			// if the finalWhiteList is empty and no rule matched, don't need to do anything
+			return ctrl.Result{}, nil
+		}
+		// if the annotations are not nil, we can try to delete the annotation
+		var ok bool
+		if ing.Annotations, ok = deleteAnnotation(ing.Annotations, ruleSet.Spec.WhitelistAnnotation); !ok {
+			if err = r.Update(ctx, ing); err != nil {
+				logo.Error(err, "failed to update the ingress")
+
+				return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+			}
+			logo.Info("removed annotation from ingress")
+
+			return ctrl.Result{}, nil
+		}
+		// there was nothing to delete or update, we are done here
+		return ctrl.Result{}, nil
+	}
+	// Here we have a whitelist and we might need to update the annotations
+	// sort the finalWhiteList
+	finalWhiteListString := strings.Join(uniqueSorted(finalWhiteList), ",")
 	if ing.Annotations == nil {
 		ing.Annotations = make(map[string]string)
 	}
+	// we need to check if the value is same
+	if !annotationAlreadyEqual(ing.Annotations, ruleSet.Spec.WhitelistAnnotation, finalWhiteListString) {
+		// if above condition is false, we need to update the annotation
+		ing.Annotations[ruleSet.Spec.WhitelistAnnotation] = finalWhiteListString
+		if err = r.Update(ctx, ing); err != nil {
+			logo.Error(err, "failed to update the ingress")
 
-	ing.Annotations[ruleSet.Spec.WhitelistAnnotation] = finalWhiteListString
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+		}
+		logo.Info("updated the ingress")
 
-	if err = r.Update(ctx, ing); err != nil {
-		logo.Error(err, "failed to update the ingress")
-		return ctrl.Result{Requeue: true, RequeueAfter: 2 * time.Second}, err
+		return ctrl.Result{}, nil
 	}
-
-	// TODO: add removal of annotation if no label on ingress
+	logo.Info("ingress already up-to-date")
 
 	return ctrl.Result{}, nil
 }
@@ -153,29 +183,43 @@ func uniqueSorted(slice []string) []string {
 	sort.SliceStable(list, func(i, j int) bool {
 		return list[i] < list[j]
 	})
+
 	return list
 }
 
-// DeleteAnnotation from annotations is they exist, used for cleanup, no return
-func DeleteAnnotation(annotations map[string]string, anno string) {
+// deleteAnnotation from annotations is they exist, used for cleanup, will return true if the annotation was deleted
+func deleteAnnotation(annotations map[string]string, anno string) (map[string]string, bool) {
 	if _, ok := annotations[anno]; ok {
 		delete(annotations, anno)
+
+		return annotations, true
 	}
+
+	return annotations, false
 }
 
-func checkIPAddress(ip string) bool {
-	if net.ParseIP(ip) == nil {
-		return false
+// annotationAlreadyEqual compares the annotation value to the given value, will return true if the value is same
+func annotationAlreadyEqual(annotations map[string]string, anno string, value string) bool {
+	if _, ok := annotations[anno]; ok {
+		// so annotation exists, return true if value is same
+		return annotations[anno] == value
 	}
-	return true
+	// if the annotation does not exist, return false
+	return false
 }
+
+//func checkIPAddress(ip string) bool {
+//	if net.ParseIP(ip) == nil {
+//		return false
+//	}
+//	return true
+//}
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *IPWhitelistConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	// TODO: add predicate filtering https://sdk.operatorframework.io/docs/building-operators/golang/references/event-filtering/
-
 	return ctrl.NewControllerManagedBy(mgr).
-		//For(&ingresssecurityv1beta1.IPWhitelistConfig{}).
+		// For(&ingresssecurityv1beta1.IPWhitelistConfig{}).
 		For(&knet.Ingress{}).
 		Complete(r)
 }

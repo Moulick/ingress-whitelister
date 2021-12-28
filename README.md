@@ -29,7 +29,7 @@ A fully defined sample of `IPWhitelistConfig` is given in the [config/samples](c
 
 ## Considerations
 
-1. Duplicate labels can cause hot looping and cause flip flopping in the annotations.
+1. Multiple matching labels can cause hot looping and cause flip flopping of the annotation.
 2. Currently the operator reconciles only on ingress object
 3. If the CRD is changed, the whitelist will be updated in roughly 5 mins at the max
 

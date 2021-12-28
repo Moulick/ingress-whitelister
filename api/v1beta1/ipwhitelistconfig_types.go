@@ -27,7 +27,7 @@ type IPGroup struct {
 	//+kubebuilder:validation:Required
 	Expires metav1.Time `json:"expires"`
 	// TODO: add ip validation
-	Cidrs []string `json:"cidrs,omitempty"`
+	CIDRS []string `json:"cidrs,omitempty"`
 }
 
 // Rule is mapping of an IPGroup to a set of labels

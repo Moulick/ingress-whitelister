@@ -39,7 +39,7 @@ spec:
           ipwhitelist-type: "devopsOnly"
       ipGroupSelector:
         - devopsVPN
-  ipGroup:
+  ipGroups:
     - name: admin
       cidrs:
         - 192.169.0.1/32

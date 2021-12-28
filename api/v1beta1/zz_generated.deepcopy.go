@@ -30,8 +30,8 @@ import (
 func (in *IPGroup) DeepCopyInto(out *IPGroup) {
 	*out = *in
 	in.Expires.DeepCopyInto(&out.Expires)
-	if in.Cidrs != nil {
-		in, out := &in.Cidrs, &out.Cidrs
+	if in.CIDRS != nil {
+		in, out := &in.CIDRS, &out.CIDRS
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
