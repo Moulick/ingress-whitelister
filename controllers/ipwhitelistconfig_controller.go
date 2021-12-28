@@ -101,8 +101,9 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 						if !group.Expires.Before(&now) {
 							logo.Info("ipGroup matched, added", "ipGroup", ipGroup)
 							finalWhiteList = append(finalWhiteList, group.CIDRS...)
+						} else {
+							logo.Info("ipGroup matched but expired", "ipGroup", ipGroup, "expiry", group.Expires.Format(time.RFC1123))
 						}
-						logo.Info("ipGroup matched but expired", "ipGroup", ipGroup, "expiry", group.Expires.Format(time.RFC1123))
 						// as soon as we find the matching group, we can break out of the loop
 						break
 					}
