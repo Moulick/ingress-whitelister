@@ -95,7 +95,7 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			// Loop through the list of IPGroupSelector
 			for _, ipGroup := range rule.IPGroupSelector {
 				// Loop and check if the ipSets has any
-				for _, group := range ruleSet.Spec.IPGroup {
+				for _, group := range ruleSet.Spec.IPGroups {
 					if group.Name == ipGroup {
 						now := v1.Now()
 						if !group.Expires.Before(&now) {

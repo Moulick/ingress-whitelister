@@ -115,8 +115,8 @@ func (in *IPWhitelistConfigSpec) DeepCopyInto(out *IPWhitelistConfigSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.IPGroup != nil {
-		in, out := &in.IPGroup, &out.IPGroup
+	if in.IPGroups != nil {
+		in, out := &in.IPGroups, &out.IPGroups
 		*out = make([]IPGroup, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])

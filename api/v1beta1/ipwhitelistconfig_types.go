@@ -49,7 +49,7 @@ type IPWhitelistConfigSpec struct {
 	// +listType=map
 	// +listMapKey=name
 	//+kubebuilder:validation:Required
-	IPGroup []IPGroup `json:"ipGroup"`
+	IPGroups []IPGroup `json:"ipGroups"`
 }
 
 //+kubebuilder:object:root=true

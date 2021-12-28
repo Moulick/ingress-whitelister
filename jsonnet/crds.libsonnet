@@ -39,7 +39,7 @@
                 spec: {
                   description: 'IPWhitelistConfigSpec defines the desired state of IPWhitelistConfig',
                   properties: {
-                    ipGroup: {
+                    ipGroups: {
                       items: {
                         description: 'IPGroup is a group of IPs with a set expiration time',
                         properties: {
@@ -140,7 +140,7 @@
                     },
                   },
                   required: [
-                    'ipGroup',
+                    'ipGroups',
                     'rules',
                     'whitelistAnnotation',
                   ],

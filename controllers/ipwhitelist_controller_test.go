@@ -144,7 +144,7 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 							},
 						},
 					},
-					IPGroup: []ingresssecurityv1beta1.IPGroup{
+					IPGroups: []ingresssecurityv1beta1.IPGroup{
 						{
 							Name:    "admin",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
