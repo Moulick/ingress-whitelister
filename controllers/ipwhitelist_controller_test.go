@@ -356,5 +356,4 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 			Expect(processedAdminIngress.Annotations).Should(HaveKeyWithValue("random-annotation", preservedAnno["random-annotation"]), "any random annotation should be preserved")
 		})
 	})
-
 })
