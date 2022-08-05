@@ -1,4 +1,3 @@
-FROM scratch
-LABEL org.opencontainers.image.authors=moulickaggarwal
+FROM gcr.io/distroless/static:nonroot
 COPY ingress-whitelister /
 ENTRYPOINT ["/ingress-whitelister"]

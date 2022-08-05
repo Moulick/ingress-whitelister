@@ -45,12 +45,16 @@ dockers:
       - "moulick/{{ .ProjectName }}:v{{ .Major }}-amd64"
       - "moulick/{{ .ProjectName }}:latest-amd64"
     build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.authors=moulickaggarwal"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.description="A Kubernetes Ingress IP whitelist annotator"
+      - --label=org.opencontainers.image.created="{{ .Date }}"
+      - --label=org.opencontainers.image.source="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.url="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.authors="moulickaggarwal"
+      - --label=org.opencontainers.image.created="{{.Date}}"
+      - --label=org.opencontainers.image.title="{{.ProjectName}}"
+      - --label=org.opencontainers.image.revision="{{.FullCommit}}"
+      - --label=org.opencontainers.image.version="{{.Version}}"
   - use: buildx
     goos: linux
     goarch: arm64
@@ -60,28 +64,16 @@ dockers:
       - "moulick/{{ .ProjectName }}:v{{ .Major }}-arm64v8"
       - "moulick/{{ .ProjectName }}:latest-arm64v8"
     build_flag_templates:
-      - "--platform=linux/arm64/v8"
-      - "--label=org.opencontainers.image.authors=moulickaggarwal"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-  - use: buildx
-    goos: linux
-    goarch: arm
-    goarm: "6"
-    dockerfile: "goreleaser.Dockerfile"
-    image_templates:
-      - "moulick/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "moulick/{{ .ProjectName }}:v{{ .Major }}-armv6"
-      - "moulick/{{ .ProjectName }}:latest-armv6"
-    build_flag_templates:
-      - "--platform=linux/arm/v6"
-      - "--label=org.opencontainers.image.authors=moulickaggarwal"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - --platform=linux/arm64/v8
+      - --label=org.opencontainers.image.description="A Kubernetes Ingress IP whitelist annotator"
+      - --label=org.opencontainers.image.created="{{ .Date }}"
+      - --label=org.opencontainers.image.source="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.url="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.authors="moulickaggarwal"
+      - --label=org.opencontainers.image.created="{{.Date}}"
+      - --label=org.opencontainers.image.title="{{.ProjectName}}"
+      - --label=org.opencontainers.image.revision="{{.FullCommit}}"
+      - --label=org.opencontainers.image.version="{{.Version}}"
   - use: buildx
     goos: linux
     goarch: arm
@@ -92,31 +84,55 @@ dockers:
       - "moulick/{{ .ProjectName }}:v{{ .Major }}-armv7"
       - "moulick/{{ .ProjectName }}:latest-armv7"
     build_flag_templates:
-      - "--platform=linux/arm/v7"
-      - "--label=org.opencontainers.image.authors=moulickaggarwal"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+      - --platform=linux/arm/v7
+      - --label=org.opencontainers.image.description="A Kubernetes Ingress IP whitelist annotator"
+      - --label=org.opencontainers.image.created="{{ .Date }}"
+      - --label=org.opencontainers.image.source="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.url="https://github.com/Moulick/ingress-whitelister"
+      - --label=org.opencontainers.image.authors="moulickaggarwal"
+      - --label=org.opencontainers.image.created="{{.Date}}"
+      - --label=org.opencontainers.image.title="{{.ProjectName}}"
+      - --label=org.opencontainers.image.revision="{{.FullCommit}}"
+      - --label=org.opencontainers.image.version="{{.Version}}"
+  #  - use: buildx
+  #    goos: linux
+  #    goarch: arm
+  #    goarm: "6"
+  #    dockerfile: "goreleaser.Dockerfile"
+  #    image_templates:
+  #      - "moulick/{{ .ProjectName }}:{{ .Tag }}-armv6"
+  #      - "moulick/{{ .ProjectName }}:v{{ .Major }}-armv6"
+  #      - "moulick/{{ .ProjectName }}:latest-armv6"
+  #    build_flag_templates:
+  #      - "--platform=linux/arm/v6"
+  #      - --label=org.opencontainers.image.description="A Kubernetes Ingress IP whitelist annotator"
+  #      - --label=org.opencontainers.image.created="{{ .Date }}"
+  #      - --label=org.opencontainers.image.source="https://github.com/Moulick/ingress-whitelister"
+  #      - --label=org.opencontainers.image.url="https://github.com/Moulick/ingress-whitelister"
+  #      - --label=org.opencontainers.image.authors="moulickaggarwal"
+  #      - --label=org.opencontainers.image.created="{{.Date}}"
+  #      - --label=org.opencontainers.image.title="{{.ProjectName}}"
+  #      - --label=org.opencontainers.image.revision="{{.FullCommit}}"
+  #      - --label=org.opencontainers.image.version="{{.Version}}"
 docker_manifests:
   # https://goreleaser.com/customization/docker_manifest/
   - name_template: moulick/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
       - moulick/{{ .ProjectName }}:{{ .Tag }}-amd64
       - moulick/{{ .ProjectName }}:{{ .Tag }}-arm64v8
-      - moulick/{{ .ProjectName }}:{{ .Tag }}-armv6
+      # - moulick/{{ .ProjectName }}:{{ .Tag }}-armv6
       - moulick/{{ .ProjectName }}:{{ .Tag }}-armv7
   - name_template: moulick/{{ .ProjectName }}:v{{ .Major }}
     image_templates:
       - moulick/{{ .ProjectName }}:v{{ .Major }}-amd64
       - moulick/{{ .ProjectName }}:v{{ .Major }}-arm64v8
-      - moulick/{{ .ProjectName }}:v{{ .Major }}-armv6
+      # - moulick/{{ .ProjectName }}:v{{ .Major }}-armv6
       - moulick/{{ .ProjectName }}:v{{ .Major }}-armv7
   - name_template: moulick/{{ .ProjectName }}:latest
     image_templates:
       - moulick/{{ .ProjectName }}:latest-amd64
       - moulick/{{ .ProjectName }}:latest-arm64v8
-      - moulick/{{ .ProjectName }}:latest-armv6
+      # - moulick/{{ .ProjectName }}:latest-armv6
       - moulick/{{ .ProjectName }}:latest-armv7
 
 checksum:

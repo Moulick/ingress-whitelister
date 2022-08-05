@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o ingress-w
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM scratch
+FROM gcr.io/distroless/static:nonroot
 LABEL org.opencontainers.image.source="https://github.com/Moulick/ingress-whitelister"
 LABEL org.opencontainers.image.url="https://github.com/Moulick/ingress-whitelister"
 LABEL org.opencontainers.image.authors="moulickaggarwal@gmail.com"
