@@ -1,5 +1,15 @@
 # Ingress Whitelister
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/Moulick/ingress-whitelister?style=for-the-badge)](https://goreportcard.com/report/github.com/Moulick/ingress-whitelister)
+[![Build status](https://img.shields.io/github/workflow/status/moulick/ingress-whitelister/goreleaser?style=for-the-badge)](https://github.com/moulick/ingress-whitelister/actions?workflow=goreleaser)
+[![Release](https://img.shields.io/github/v/release/moulick/ingress-whitelister?style=for-the-badge)](https://github.com/moulick/ingress-whitelister/releases/latest)
+[![Software License](https://img.shields.io/github/license/moulick/ingress-whitelister?style=for-the-badge)](/LICENSE.md)
+[![Go Report card](https://goreportcard.com/badge/github.com/moulick/ingress-whitelister?style=for-the-badge)](https://goreportcard.com/report/github.com/moulick/ingress-whitelister)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=for-the-badge)](http://godoc.org/github.com/moulick/ingress-whitelister)
+![Docker Pulls](https://img.shields.io/docker/pulls/moulick/ingress-whitelister?style=for-the-badge)
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=for-the-badge)](https://github.com/goreleaser)
+
+
 ## What is Ingress Whitelister?
 
 Ingress Whitelister adds annotations to your ingress objects based on labels. It is a very simple operator whose current
