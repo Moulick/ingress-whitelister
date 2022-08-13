@@ -27,7 +27,7 @@ jobs:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
     name: Build
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -50,12 +50,12 @@ jobs:
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/moulick/k8s-cr-validator:${{ github.sha }} .
+          docker build -t docker.io/moulick/ingress-whitelister:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'docker.io/moulick/k8s-cr-validator:${{ github.sha }}'
+          image-ref: 'docker.io/moulick/ingress-whitelister:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-oci-image.sarif'
           severity: 'CRITICAL,HIGH'
