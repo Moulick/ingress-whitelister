@@ -1,0 +1,27 @@
+apiVersion: ingress.security.moulick/v1alpha1
+kind: Provider
+metadata:
+  name: akamai-site-shield
+  namespace: default
+spec:
+  akamai:
+    serviceConsumerDomainRef:
+      secret:
+        name: akamai-secret
+        namespace: default
+      key: host
+    clientTokenSecretRef:
+      secret:
+        name: akamai-secret
+        namespace: default
+      key: client_token
+    clientSecretSecretRef:
+      secret:
+        name: akamai-secret
+        namespace: default
+      key: client_secret
+    accessTokenSecretRef:
+      secret:
+        name: akamai-secret
+        namespace: default
+      key: access_token

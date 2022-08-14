@@ -33,6 +33,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ingress.security.moulick
+  resources:
+  - providers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ingress.security.moulick
+  resources:
+  - providers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ingress.security.moulick
+  resources:
+  - providers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - networking.k8s.io
   resources:
   - ingresses

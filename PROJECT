@@ -13,4 +13,13 @@ resources:
   kind: IPWhitelistConfig
   path: github.com/Moulick/ingress-whitelister/api/v1beta1
   version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: moulick
+  group: ingress.security
+  kind: Provider
+  path: github.com/Moulick/ingress-whitelister/api/v1alpha1
+  version: v1alpha1
 version: "3"
