@@ -58,3 +58,9 @@ spec:
       cidrs:
         - 156.75.1.1/24
       expires: 2022-12-11T16:32:29Z
+    - name: site-shield
+      providerRef:
+        name: akamai
+        kind: provider
+        mapId: 1935454
+      expires: 2022-12-11T16:32:29Z

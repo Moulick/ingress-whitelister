@@ -1,0 +1,7 @@
+apiVersion: ingress.security.moulick/v1beta1
+kind: provider
+metadata:
+  name: cloudflare
+spec:
+  cloudflare:
+    jsonApi: https://api.cloudflare.com/client/v4/ips

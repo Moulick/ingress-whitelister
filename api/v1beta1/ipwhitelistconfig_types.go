@@ -18,7 +18,18 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+type ProviderRef struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+	// +kubebuilder:validation:Enum=provider
+	Kind string `json:"kind"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:XIntOrString
+	MapId intstr.IntOrString `json:"mapId,omitempty"`
+}
 
 // IPGroup is a group of IPs with a set expiration time
 type IPGroup struct {
@@ -27,7 +38,10 @@ type IPGroup struct {
 	//+kubebuilder:validation:Required
 	Expires metav1.Time `json:"expires"`
 	// TODO: add ip validation
+	//+kubebuilder:validation:Optional
 	CIDRS []string `json:"cidrs,omitempty"`
+	//+kubebuilder:validation:Optional
+	Provider ProviderRef `json:"providerRef,omitempty"`
 }
 
 // Rule is mapping of an IPGroup to a set of labels

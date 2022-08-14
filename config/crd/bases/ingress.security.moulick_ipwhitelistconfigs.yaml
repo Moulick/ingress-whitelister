@@ -50,6 +50,23 @@ spec:
                       type: string
                     name:
                       type: string
+                    providerRef:
+                      properties:
+                        kind:
+                          enum:
+                          - provider
+                          type: string
+                        mapId:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        name:
+                          type: string
+                      required:
+                      - kind
+                      - name
+                      type: object
                   required:
                   - expires
                   - name

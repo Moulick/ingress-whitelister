@@ -1,0 +1,7 @@
+apiVersion: ingress.security.moulick/v1beta1
+kind: provider
+metadata:
+  name: fastly
+spec:
+  fastly:
+    jsonApi: https://api.fastly.com/public-ip-list
