@@ -22,6 +22,7 @@ import (
 
 	"github.com/corbaltcode/go-akamai"
 	"github.com/corbaltcode/go-akamai/siteshield"
+	"inet.af/netaddr"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -29,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	ingresssecurityv1alpha1 "github.com/Moulick/ingress-whitelister/api/v1alpha1"
+	alpha1 "github.com/Moulick/ingress-whitelister/api/v1alpha1"
 )
 
 // ProviderReconciler reconciles a Provider object
@@ -55,7 +56,7 @@ func (r *ProviderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	logo := log.FromContext(ctx).WithValues("provider", req.NamespacedName)
 
 	// Fetch the Provider instance
-	provider := &ingresssecurityv1alpha1.Provider{}
+	provider := &alpha1.Provider{}
 	if err := r.Get(ctx, req.NamespacedName, provider); err != nil {
 		logo.Error(err, "unable to fetch Provider")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -64,7 +65,17 @@ func (r *ProviderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Check provider type
 	if provider.Spec.Akamai != nil {
-
+		akaClient, err := r.getsiteShieldClient(ctx, provider.Spec.Akamai)
+		if err != nil {
+			logo.Error(err, "unable to get site shield client")
+			return ctrl.Result{}, err
+		}
+		cidrs, err := r.getAkamaiCidrs(ctx, akaClient)
+		if err != nil {
+			logo.Error(err, "unable to get akamai cidrs")
+			return ctrl.Result{}, err
+		}
+		logo.Info("Akamai CIDRs", "cidrs", *cidrs)
 	}
 
 	return ctrl.Result{}, nil
@@ -73,23 +84,21 @@ func (r *ProviderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 // SetupWithManager sets up the controller with the Manager.
 func (r *ProviderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&ingresssecurityv1alpha1.Provider{}).
+		For(&alpha1.Provider{}).
 		Complete(r)
 }
 
-func (r *ProviderReconciler) readSecretKey(ctx context.Context, secretRef *ingresssecurityv1alpha1.SecretKeySelector) (string, error) {
-	secret := &v1.Secret{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: secretRef.Secret.Namespace, Name: secretRef.Secret.Name}, secret); err != nil {
-		return "", err
+func (r *ProviderReconciler) getAkamaiCidrs(ctx context.Context, akaClient *siteshield.Client) (*[]netaddr.IPPrefix, error) {
+	siteMap, err := akaClient.GetMap(2345)
+
+	if err != nil {
+		return nil, err
 	}
-	val, ok := secret.Data[secretRef.Key]
-	if !ok {
-		return "", fmt.Errorf("secret %s missing key %s", secret.Namespace+"/"+secret.Name, secretRef.Key)
-	}
-	return string(val), nil
+	return &siteMap.ProposedCIDRs, nil
+
 }
 
-func (r *ProviderReconciler) demo(ctx context.Context, provider *ingresssecurityv1alpha1.AkamaiProvider) error {
+func (r *ProviderReconciler) getsiteShieldClient(ctx context.Context, provider *alpha1.AkamaiProvider) (*siteshield.Client, error) {
 	var host string
 	var clientSecret string
 	var clientToken string
@@ -98,35 +107,34 @@ func (r *ProviderReconciler) demo(ctx context.Context, provider *ingresssecurity
 
 	if provider.Host != nil {
 		if host, err = r.readSecretKey(ctx, provider.Host); err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		return fmt.Errorf("host is required")
+		return nil, fmt.Errorf("host is required")
 	}
 	if provider.ClientToken != nil {
 		if clientToken, err = r.readSecretKey(ctx, provider.ClientToken); err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		return fmt.Errorf("client token is required")
+		return nil, fmt.Errorf("client token is required")
 	}
 	if provider.ClientSecret != nil {
 		if clientSecret, err = r.readSecretKey(ctx, provider.ClientSecret); err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		return fmt.Errorf("client secret is required")
+		return nil, fmt.Errorf("client secret is required")
 
 	}
 	if provider.AccessToken != nil {
 		if accessToken, err = r.readSecretKey(ctx, provider.AccessToken); err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		return fmt.Errorf("access token is required")
+		return nil, fmt.Errorf("access token is required")
 
 	}
-
 	cred := akamai.Credentials{
 		ClientSecret: clientSecret,
 		AccessToken:  accessToken,
@@ -134,10 +142,26 @@ func (r *ProviderReconciler) demo(ctx context.Context, provider *ingresssecurity
 		Host:         host,
 	}
 
-	client := siteshield.Client{Credentials: cred}
-	maps, err := client.GetMap(1935454)
-	if err != nil {
-		fmt.Println(err)
+	shieldClient := siteshield.Client{Credentials: cred}
+	return &shieldClient, nil
+
+}
+
+func (r *ProviderReconciler) readSecretKey(ctx context.Context, secretRef *alpha1.SecretKeySelector) (string, error) {
+	secret := &v1.Secret{}
+	if err := r.Get(
+		ctx,
+		types.NamespacedName{
+			Namespace: secretRef.Secret.Namespace,
+			Name:      secretRef.Secret.Name,
+		},
+		secret,
+	); err != nil {
+		return "", err
 	}
-	
+	val, ok := secret.Data[secretRef.Key]
+	if !ok {
+		return "", fmt.Errorf("secret %s missing key %s", secret.Namespace+"/"+secret.Name, secretRef.Key)
+	}
+	return string(val), nil
 }

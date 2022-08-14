@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the ingress.security v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=ingress.security.moulick
+// +kubebuilder:object:generate=true
+// +groupName=ingress.security.moulick
 package v1alpha1
 
 import (
