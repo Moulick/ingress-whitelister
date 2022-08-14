@@ -23,9 +23,9 @@ import (
 
 type ProviderRef struct {
 	// +kubebuilder:validation:Required
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// +kubebuilder:validation:Enum=provider
-	Kind string `json:"kind"`
+	Kind string `json:"kind,omitempty"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:XIntOrString
 	MapId intstr.IntOrString `json:"mapId,omitempty"`

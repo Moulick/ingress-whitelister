@@ -33,8 +33,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	ingresssecurityv1alpha1 "github.com/Moulick/ingress-whitelister/api/v1alpha1"
-	ingresssecurityv1beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
+	alpha1 "github.com/Moulick/ingress-whitelister/api/v1alpha1"
+	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -65,16 +65,17 @@ var _ = BeforeSuite(func() {
 		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
 		ErrorIfCRDPathMissing: true,
 	}
-
+	var err error
+	// cfg is defined in this file globally.
 	cfg, err := testEnv.Start()
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = ingresssecurityv1beta1.AddToScheme(scheme.Scheme)
+	err = beta1.AddToScheme(scheme.Scheme)
 	err = knet.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = ingresssecurityv1alpha1.AddToScheme(scheme.Scheme)
+	err = alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
@@ -104,7 +105,9 @@ var _ = BeforeSuite(func() {
 }, 60)
 
 var _ = AfterSuite(func() {
+	cancel()
 	By("tearing down the test environment")
+
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })
