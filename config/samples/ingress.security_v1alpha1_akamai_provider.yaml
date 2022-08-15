@@ -7,21 +7,21 @@ spec:
   akamai:
     serviceConsumerDomainRef:
       secret:
-        name: akamai-secret
+        name: akamai-site-shield
         namespace: default
       key: host
     clientTokenSecretRef:
       secret:
-        name: akamai-secret
+        name: akamai-site-shield
         namespace: default
       key: client_token
     clientSecretSecretRef:
       secret:
-        name: akamai-secret
+        name: akamai-site-shield
         namespace: default
       key: client_secret
     accessTokenSecretRef:
       secret:
-        name: akamai-secret
+        name: akamai-site-shield
         namespace: default
       key: access_token

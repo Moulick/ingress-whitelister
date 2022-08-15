@@ -2,7 +2,7 @@
 # Image URL to use all building/pushing image targets
 IMG ?= docker.io/moulick/ingress-whitelister:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.24.2
+ENVTEST_K8S_VERSION = 1.24.3
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -32,7 +32,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v3.10.0
+KUSTOMIZE_VERSION ?= v4.5.5
 CONTROLLER_TOOLS_VERSION ?= v0.7.0
 
 .PHONY: all
@@ -81,7 +81,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 #build: generate fmt vet jsonnet-crd ## Build manager binary.
-build: generate fmt vet ## Build manager binary.
+build: manifests generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
 .PHONY: run

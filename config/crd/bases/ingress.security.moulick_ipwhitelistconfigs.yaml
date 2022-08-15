@@ -63,9 +63,6 @@ spec:
                           x-kubernetes-int-or-string: true
                         name:
                           type: string
-                      required:
-                      - kind
-                      - name
                       type: object
                   required:
                   - expires

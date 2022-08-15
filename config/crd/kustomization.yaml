@@ -3,7 +3,7 @@
 # It should be run by config/default
 resources:
   - bases/ingress.security.moulick_ipwhitelistconfigs.yaml
-- bases/ingress.security.moulick_providers.yaml
+  - bases/ingress.security.moulick_providers.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

@@ -27,7 +27,7 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	ingresssecurityv1beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
+	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 )
 
 // +kubebuilder:docs-gen:collapse=Imports
@@ -72,17 +72,17 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 		It("Should add the ipwhitelist annotation to the Ingress", func() {
 			By("Creating a IPWhitelistConfig")
 			ctx := context.Background()
-			ipwhitelistRuleset := &ingresssecurityv1beta1.IPWhitelistConfig{
+			ipwhitelistRuleset := &beta1.IPWhitelistConfig{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: ingresssecurityv1beta1.GroupVersion.String(),
+					APIVersion: beta1.GroupVersion.String(),
 					Kind:       "IPWhitelistConfig",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: Name,
 				},
-				Spec: ingresssecurityv1beta1.IPWhitelistConfigSpec{
+				Spec: beta1.IPWhitelistConfigSpec{
 					WhitelistAnnotation: randomWhitelistAnnotation,
-					Rules: []ingresssecurityv1beta1.Rule{
+					Rules: []beta1.Rule{
 						{
 							Name: "admin",
 							Selector: &metav1.LabelSelector{
@@ -144,7 +144,7 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 							},
 						},
 					},
-					IPGroups: []ingresssecurityv1beta1.IPGroup{
+					IPGroups: []beta1.IPGroup{
 						{
 							Name:    "admin",
 							Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
@@ -181,7 +181,7 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 			Expect(k8sClient.Create(ctx, ipwhitelistRuleset)).Should(Succeed())
 
 			ipwhitelistRulesetKey := types.NamespacedName{Name: ipwhitelistRuleset.Name}
-			createdipwhitelistRuleset := &ingresssecurityv1beta1.IPWhitelistConfig{}
+			createdipwhitelistRuleset := &beta1.IPWhitelistConfig{}
 			// check creation
 			Eventually(func(g Gomega) bool {
 				err := k8sClient.Get(ctx, ipwhitelistRulesetKey, createdipwhitelistRuleset)

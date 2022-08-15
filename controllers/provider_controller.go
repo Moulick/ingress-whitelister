@@ -18,11 +18,19 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/corbaltcode/go-akamai"
 	"github.com/corbaltcode/go-akamai/siteshield"
 	"inet.af/netaddr"
+
+	"github.com/cloudflare/cloudflare-go"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -70,15 +78,24 @@ func (r *ProviderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			logo.Error(err, "unable to get site shield client")
 			return ctrl.Result{}, err
 		}
-		cidrs, err := r.getAkamaiCidrs(ctx, akaClient)
+		cidrs, err := r.getAkamaiCidrs(akaClient)
 		if err != nil {
 			logo.Error(err, "unable to get akamai cidrs")
 			return ctrl.Result{}, err
 		}
 		logo.Info("Akamai CIDRs", "cidrs", *cidrs)
+	} else if provider.Spec.Cloudflare != nil {
+		cidrs, err := r.getCloudFlareCidrs(ctx, *provider.Spec.Cloudflare)
+		if err != nil {
+			logo.Error(err, "unable to get cloudflare cidrs")
+			return ctrl.Result{}, err
+		}
+		logo.Info("cloudFlare CIDRs", "cidrs", *cidrs)
+	} else {
+		logo.Info("no supported provider found")
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: 10 * time.Minute}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -88,8 +105,8 @@ func (r *ProviderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ProviderReconciler) getAkamaiCidrs(ctx context.Context, akaClient *siteshield.Client) (*[]netaddr.IPPrefix, error) {
-	siteMap, err := akaClient.GetMap(2345)
+func (r *ProviderReconciler) getAkamaiCidrs(akaClient *siteshield.Client) (*[]netaddr.IPPrefix, error) {
+	siteMap, err := akaClient.GetMap(1935454)
 
 	if err != nil {
 		return nil, err
@@ -164,4 +181,50 @@ func (r *ProviderReconciler) readSecretKey(ctx context.Context, secretRef *alpha
 		return "", fmt.Errorf("secret %s missing key %s", secret.Namespace+"/"+secret.Name, secretRef.Key)
 	}
 	return string(val), nil
+}
+
+// getCloudFlareCidrs returns the CIDRs for the given CloudFlare provider.
+// This code is copied from https://github.com/cloudflare/cloudflare-go/blob/master/ips.go and modified to take given URL as input.
+func (r *ProviderReconciler) getCloudFlareCidrs(ctx context.Context, provider alpha1.CloudflareProvider) (*[]netaddr.IPPrefix, error) {
+
+	var cloudFlareIps []netaddr.IPPrefix
+
+	uri := provider.JsonApi
+	resp, err := http.Get(uri) //nolint:gosec
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var cresp cloudflare.IPsResponse
+	err = json.Unmarshal(body, &cresp)
+	if err != nil {
+		return nil, err
+	}
+
+	var ips cloudflare.IPRanges
+	ips.IPv4CIDRs = cresp.Result.IPv4CIDRs
+	ips.IPv6CIDRs = cresp.Result.IPv6CIDRs
+
+	for _, ip := range cresp.Result.ChinaColos {
+		if strings.Contains(ip, ":") {
+			ips.ChinaIPv6CIDRs = append(ips.ChinaIPv6CIDRs, ip)
+		} else {
+			ips.ChinaIPv4CIDRs = append(ips.ChinaIPv4CIDRs, ip)
+		}
+	}
+
+	for _, ip := range ips.IPv4CIDRs {
+		parsedIPPrefix, err2 := netaddr.ParseIPPrefix(ip)
+		if err2 != nil {
+			return nil, err2
+		}
+		cloudFlareIps = append(cloudFlareIps, parsedIPPrefix)
+	}
+
+	return &cloudFlareIps, nil
 }
