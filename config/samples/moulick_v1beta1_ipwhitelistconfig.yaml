@@ -16,6 +16,9 @@ spec:
         - admin
         - devopsVPN
         - siteA-vpn
+      providerSelector:
+        - name: cloudflare
+#        - name: akamai-site-shield
     - name: internal
       selector:
         matchExpressions:
@@ -31,8 +34,8 @@ spec:
       selector:
         matchLabels:
           ipwhitelist-type: customerFacing
-      ipGroupSelector:
-        - public
+      providerSelector:
+        - name: cloudflare
     - name: devopsOnly
       selector:
         matchLabels:
@@ -58,3 +61,32 @@ spec:
       cidrs:
         - 156.75.1.1/24
       expires: 2022-12-11T16:32:29Z
+  providers:
+    - name: cloudflare
+      type: cloudflare
+      cloudflare:
+        jsonApi: "https://api.cloudflare.com/client/v4/ips"
+#    - name: akamai-site-shield
+#      type: akamai
+#      akamai:
+#        mapId: 1935454
+#        serviceConsumerDomainRef:
+#          secret:
+#            name: akamai-site-shield
+#            namespace: default
+#          key: host
+#        clientTokenSecretRef:
+#          secret:
+#            name: akamai-site-shield
+#            namespace: default
+#          key: client_token
+#        clientSecretSecretRef:
+#          secret:
+#            name: akamai-site-shield
+#            namespace: default
+#          key: client_secret
+#        accessTokenSecretRef:
+#          secret:
+#            name: akamai-site-shield
+#            namespace: default
+#          key: access_token

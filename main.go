@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	ingresssecurityv1beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
+	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 	"github.com/Moulick/ingress-whitelister/controllers"
 	//+kubebuilder:scaffold:imports
 )
@@ -45,7 +45,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(ingresssecurityv1beta1.AddToScheme(scheme))
+	utilruntime.Must(beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -101,6 +101,7 @@ func main() {
 		Client:            mgr.GetClient(),
 		Scheme:            mgr.GetScheme(),
 		IPWhitelistConfig: ipWhitelistConfig,
+		Log:               ctrl.Log.WithName("controllers").WithName("IPWhitelistConfig"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IPWhitelistConfig")
 		os.Exit(1)
