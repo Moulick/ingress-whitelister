@@ -36,7 +36,7 @@ const RuleSetName = "ipwhitelist-ruleset"
 
 var pathType = knet.PathTypeImplementationSpecific
 var preservedAnno = map[string]string{"random-annotation": "should-have-been-preserved"}
-var _ = Describe("IPWhitelistConfig controller", func() {
+var _ = Describe("IPWhitelistConfig controller", Ordered, func() {
 
 	// Define utility constants for object names and testing timeouts/durations and intervals.
 	const (
@@ -384,39 +384,41 @@ var _ = Describe("IPWhitelistConfig controller", func() {
 			Expect(processedAdminIngress.Annotations).Should(HaveKeyWithValue("random-annotation", preservedAnno["random-annotation"]), "any random annotation should be preserved")
 		})
 
-		It("Should remove the ipwhitelist annotation from the Ingress", func() {
+		Context("When label is removed from admin ingress", func() {
+			It("Should remove the ipwhitelist annotation from the Ingress", func() {
 
-			ingressAdminKey := types.NamespacedName{Name: ingressAdmin.Name, Namespace: ingressAdmin.Namespace}
+				ingressAdminKey := types.NamespacedName{Name: ingressAdmin.Name, Namespace: ingressAdmin.Namespace}
 
-			By("Removing label from the admin ingress")
-			// Using eventually here because the controller and ginkgo both are updating the ingress and we need to handle the conflicting updates
-			Eventually(func() bool {
-				By("Getting the current admin ingress with annotation")
-				currentAdminIngress := knet.Ingress{}
+				By("Removing label from the admin ingress")
+				// Using eventually here because the controller and ginkgo both are updating the ingress and we need to handle the conflicting updates
+				Eventually(func() bool {
+					By("Getting the current admin ingress with annotation")
+					currentAdminIngress := knet.Ingress{}
 
+					Eventually(func(g Gomega) map[string]string {
+						err := k8sClient.Get(ctx, ingressAdminKey, &currentAdminIngress)
+						g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
+						return currentAdminIngress.Annotations
+					}, timeout, interval).Should(HaveKey(randomWhitelistAnnotation))
+
+					delete(currentAdminIngress.Labels, whitelistLabel)
+
+					err := k8sClient.Update(ctx, &currentAdminIngress)
+					if err != nil {
+						GinkgoWriter.Println("error updating ingress", err)
+						return false
+					}
+					return true
+				}, timeout, interval).Should(BeTrue())
+
+				By("Checking that the admin ingress does not have the ipwhitelist annotation")
 				Eventually(func(g Gomega) map[string]string {
-					err := k8sClient.Get(ctx, ingressAdminKey, &currentAdminIngress)
+					labeledAdminIngress := &knet.Ingress{}
+					err := k8sClient.Get(ctx, ingressAdminKey, labeledAdminIngress)
 					g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
-					return currentAdminIngress.Annotations
-				}, timeout, interval).Should(HaveKey(randomWhitelistAnnotation))
-
-				delete(currentAdminIngress.Labels, whitelistLabel)
-
-				err := k8sClient.Update(ctx, &currentAdminIngress)
-				if err != nil {
-					GinkgoWriter.Println("error updating ingress", err)
-					return false
-				}
-				return true
-			}, timeout, interval).Should(BeTrue())
-
-			By("Checking that the admin ingress does not have the ipwhitelist annotation")
-			Eventually(func(g Gomega) map[string]string {
-				labeledAdminIngress := &knet.Ingress{}
-				err := k8sClient.Get(ctx, ingressAdminKey, labeledAdminIngress)
-				g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
-				return labeledAdminIngress.Annotations
-			}, timeout, interval).ShouldNot(HaveKey(randomWhitelistAnnotation))
+					return labeledAdminIngress.Annotations
+				}, timeout, interval).ShouldNot(HaveKey(randomWhitelistAnnotation))
+			})
 		})
 	})
 })
