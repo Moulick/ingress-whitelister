@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/cloudflare/cloudflare-go v0.46.0
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
-	github.com/go-logr/logr v0.4.0
+	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6
