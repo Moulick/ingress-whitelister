@@ -32,6 +32,8 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 YQ ?= $(LOCALBIN)/yq
 GINKGO ?= $(LOCALBIN)/ginkgo
+JSONNET ?= $(LOCALBIN)/jsonnet
+JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
@@ -82,7 +84,7 @@ test: manifests generate fmt vet envtest ginkgo ## Run tests.
 ##@ Build
 
 .PHONY: build
-#build: generate fmt vet jsonnet-crd ## Build manager binary.
+# build: generate fmt vet jsonnet-crd ## Build manager binary.
 build: manifests generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
@@ -116,15 +118,13 @@ crds: manifests kustomize ## Generate CRDs into the bin directory.
 	$(KUSTOMIZE) build config/crd > $(CRD_OUT)
 
 .PHONY: jsonnet-crd
-jsonnet-crd: yq jsonnet jsonnetfmt crds ## Generate CRDs in the form of jsonnet files.
+jsonnet-crd: yq jsonnet crds ## Generate CRDs in the form of jsonnet files.
 	$(YQ) eval -I=0 $(CRD_OUT) -o=json | jq -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
 
 .PHONY: bundle
 bundle: jsonnet-crd ## Generate deployment files into the bin directory.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > bin/bundle.yaml
-
-#jsonnet-bundle: jsonnet-crd ## Generate deployment files in the form of jsonnet files.
 
 .PHONY: install
 install: bin crds ## Install CRDs into the K8s cluster specified in ~/.kube/config.
@@ -155,16 +155,10 @@ controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessar
 $(CONTROLLER_GEN): $(LOCALBIN)
 	test -s $(CONTROLLER_GEN) || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
-JSONNET = $(shell pwd)/bin/jsonnet
 .PHONY: jsonnet
-jsonnet: ## Download jsonnet locally if necessary.
-	$(call go-get-tool,$(JSONNET),github.com/google/go-jsonnet/cmd/...@v0.18.0)
-
-JSONNET_FMT = $(shell pwd)/bin/jsonnetfmt
-.PHONY: jsonnetfmt
-jsonnetfmt: ## Download jsonnetfmt locally if necessary.
-	$(call go-get-tool,$(JSONNET_FMT),github.com/google/go-jsonnet/cmd/...@v0.18.0)
-
+jsonnet: $(JSONNET)
+$(JSONNET): $(LOCALBIN) ## Download jsonnet locally if necessary.
+	test -s $(JSONNET) || GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@4906958414ed9617e3fe5acac5752f6f8426551c
 
 .PHONY: yq
 yq: $(YQ) ## Download yq locally if necessary.
@@ -181,16 +175,16 @@ ginkgo: $(GINKGO) ## Download ginkgo locally if necessary.
 $(GINKGO): $(LOCALBIN)
 	test -s $(GINKGO) || GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@latest
 
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
+# # go-get-tool will 'go get' any package $2 and install it to $1.
+# PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+# define go-get-tool
+# @[ -f $(1) ] || { \
+# set -e ;\
+# TMP_DIR=$$(mktemp -d) ;\
+# cd $$TMP_DIR ;\
+# go mod init tmp ;\
+# echo "Downloading $(2)" ;\
+# GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+# rm -rf $$TMP_DIR ;\
+# }
+# endef
