@@ -1,0 +1,20 @@
+stages:
+  - build
+
+buildah-build:
+  stage: build
+  variables:
+    STORAGE_DRIVER: vfs
+  tags:
+    - kubernetes
+  image:
+    name: quay.io/buildah/stable:latest
+  before_script:
+    - buildah login -u "$CI_REGISTRY_USER" -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+  script:
+    - buildah bud
+      -t "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}"
+      -f Dockerfile
+    - buildah tag "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}" "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+    - buildah push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}"
+    - buildah push "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
