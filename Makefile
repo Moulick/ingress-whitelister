@@ -37,10 +37,16 @@ JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
-CONTROLLER_TOOLS_VERSION ?= v0.7.0
+CONTROLLER_GEN_VERSION ?= v0.7.0
+JSONNET_VERSION ?= v0.19.1
+YQ_VERSION ?= v4.29.2
+GINKGO_VERSION ?= v2.4.0
 
 .PHONY: all
 all: build
+
+yee:
+	@echo $(word 6,$(shell $(JSONNET) --version))
 
 ##@ General
 
@@ -151,19 +157,49 @@ $(KUSTOMIZE): $(LOCALBIN)
 	test -s $(KUSTOMIZE) || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(CONTROLLER_GEN) || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary.
+	if test -s $(CONTROLLER_GEN); then \
+		if [ $(CONTROLLER_GEN_VERSION) = $(word 2,$(shell $(CONTROLLER_GEN) --version)) ]; then \
+			echo "Correct version of controller-gen is already installed"; \
+		else \
+			echo "Wrong version of controller-gen is installed, reinstalling new"; \
+			GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION); \
+			echo "controller-gen installed"; \
+		fi \
+	else \
+		GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION); \
+		echo "controller-gen installed"; \
+	fi
 
 .PHONY: jsonnet
-jsonnet: $(JSONNET)
-$(JSONNET): $(LOCALBIN) ## Download jsonnet locally if necessary.
-	test -s $(JSONNET) || GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@4906958414ed9617e3fe5acac5752f6f8426551c
+jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
+	if test -s $(JSONNET); then \
+		if [ $(JSONNET_VERSION) = $(word 6,$(shell $(JSONNET) --version)) ]; then \
+			echo "Correct version of Jsonnet is already installed"; \
+		else \
+			echo "Wrong version of Jsonnet is installed, reinstalling new"; \
+			GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@$(JSONNET_VERSION); \
+			echo "Jsonnet installed"; \
+		fi \
+	else \
+		GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@$(JSONNET_VERSION); \
+		echo "Jsonnet installed"; \
+	fi
 
 .PHONY: yq
-yq: $(YQ) ## Download yq locally if necessary.
-$(YQ): $(LOCALBIN)
-	test -s $(YQ) || GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@v4.16.2
+yq: $(LOCALBIN) ## Download yq locally if necessary.
+	if test -s $(YQ); then \
+		if [ $(YQ_VERSION) = v$(word 4,$(shell $(YQ) --version)) ]; then \
+			echo "Correct version of yq is already installed"; \
+		else \
+			echo "Wrong version of yq is installed, reinstalling new"; \
+			GOBIN=$(shell pwd)/bin go install github.com/mikefarah/yq/v4@$(YQ_VERSION); \
+			echo "yq installed"; \
+		fi \
+	else \
+		GOBIN=$(shell pwd)/bin go install github.com/mikefarah/yq/v4@$(YQ_VERSION); \
+		echo "yq installed"; \
+	fi
 
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
@@ -171,20 +207,16 @@ $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: ginkgo
-ginkgo: $(GINKGO) ## Download ginkgo locally if necessary.
-$(GINKGO): $(LOCALBIN)
-	test -s $(GINKGO) || GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@latest
-
-# # go-get-tool will 'go get' any package $2 and install it to $1.
-# PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-# define go-get-tool
-# @[ -f $(1) ] || { \
-# set -e ;\
-# TMP_DIR=$$(mktemp -d) ;\
-# cd $$TMP_DIR ;\
-# go mod init tmp ;\
-# echo "Downloading $(2)" ;\
-# GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
-# rm -rf $$TMP_DIR ;\
-# }
-# endef
+ginkgo: $(LOCALBIN) ## Download ginkgo locally if necessary.
+	if test -s $(GINKGO); then \
+		if [ $(GINKGO_VERSION) = v$(word 3,$(shell $(GINKGO) version)) ]; then \
+			echo "Correct version of Ginkgo is already installed"; \
+		else \
+			echo "Wrong version of Ginkgo is installed, reinstalling new"; \
+			GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION); \
+			echo "Ginkgo installed"; \
+		fi \
+	else \
+		GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION); \
+		echo "Ginkgo installed"; \
+	fi
