@@ -45,9 +45,6 @@ GINKGO_VERSION ?= v2.4.0
 .PHONY: all
 all: build
 
-yee:
-	@echo $(word 6,$(shell $(JSONNET) --version))
-
 ##@ General
 
 # The help target prints out all targets with their descriptions organized
