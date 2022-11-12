@@ -219,30 +219,40 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 
 // getIPWhitelistConfig retrieves the ruleSet configuration.
 func (r *IPWhitelistConfigReconciler) getIPWhitelistConfig(ctx context.Context) (*beta1.IPWhitelistConfig, error) {
-	var iPWhitelistConfig beta1.IPWhitelistConfig
-	err := r.Get(ctx, client.ObjectKey{Name: r.IPWhitelistConfig}, &iPWhitelistConfig)
+	var ipWhitelistConfig beta1.IPWhitelistConfig
+	err := r.Get(ctx, client.ObjectKey{Name: r.IPWhitelistConfig}, &ipWhitelistConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return &iPWhitelistConfig, nil
+	return &ipWhitelistConfig, nil
 }
 
-// Return a list of unique and sorted list of strings from input
+// uniqueSorted returns a sorted slice of unique strings
+// from the input slice.
 func uniqueSorted(slice []string) []string {
-	keys := make(map[string]bool)
-	var list []string
+	// Create a map to track seen strings.
+	seenEntries := make(map[string]bool)
+	// Create a slice to hold unique strings.
+	var uniqueEntries []string
+
+	// Loop through the input slice.
 	for _, entry := range slice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
+		// If the current string is not in the map,
+		// add it to the map and the unique slice.
+		if _, value := seenEntries[entry]; !value {
+			seenEntries[entry] = true
+			uniqueEntries = append(uniqueEntries, entry)
 		}
 	}
-	sort.SliceStable(list, func(i, j int) bool {
-		return list[i] < list[j]
+
+	// Sort the unique slice.
+	sort.SliceStable(uniqueEntries, func(i, j int) bool {
+		return uniqueEntries[i] < uniqueEntries[j]
 	})
 
-	return list
+	// Return the unique slice.
+	return uniqueEntries
 }
 
 // deleteAnnotation from annotations is they exist, used for cleanup, will return true if the annotation was deleted
