@@ -122,7 +122,7 @@ crds: manifests kustomize ## Generate CRDs into the bin directory.
 
 .PHONY: jsonnet-crd
 jsonnet-crd: yq gojq jsonnet crds ## Generate CRDs in the form of jsonnet files.
-	$(YQ) eval -I=0 $(CRD_OUT) -o=json | $(GOJQ) -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
+	@$(YQ) eval -I=0 $(CRD_OUT) -o=json | $(GOJQ) -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
 
 .PHONY: bundle
 bundle: jsonnet-crd ## Generate deployment files into the bin directory.
@@ -151,11 +151,11 @@ KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/k
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
 $(KUSTOMIZE): $(LOCALBIN)
-	test -s $(KUSTOMIZE) || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
+	@test -s $(KUSTOMIZE) || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
 controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary.
-	if test -s $(CONTROLLER_GEN); then \
+	@if test -s $(CONTROLLER_GEN); then \
 		if [ $(CONTROLLER_GEN_VERSION) = $(word 2,$(shell $(CONTROLLER_GEN) --version)) ]; then \
 			echo "Correct version of controller-gen is already installed"; \
 		else \
@@ -171,7 +171,7 @@ controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary.
 
 .PHONY: jsonnet
 jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
-	if test -s $(JSONNET); then \
+	@if test -s $(JSONNET); then \
 		if [ $(JSONNET_VERSION) = $(word 6,$(shell $(JSONNET) --version)) ]; then \
 			echo "Correct version of Jsonnet is already installed"; \
 		else \
@@ -187,7 +187,7 @@ jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
 
 .PHONY: yq
 yq: $(LOCALBIN) ## Download yq locally if necessary.
-	if test -s $(YQ); then \
+	@if test -s $(YQ); then \
 		if [ $(YQ_VERSION) = $(word 4,$(shell $(YQ) --version)) ]; then \
 			echo "Correct version of yq is already installed"; \
 		else \
@@ -203,7 +203,7 @@ yq: $(LOCALBIN) ## Download yq locally if necessary.
 
 .PHONY: gojq
 gojq: $(LOCALBIN) ## Download gojq locally if necessary.
-	if test -s $(JQ); then \
+	@if test -s $(JQ); then \
 		if [ $(GOJQ_VERSION) = v$(word 2,$(shell $(GOJQ) --version)) ]; then \
 			echo "Correct version of gojq is already installed"; \
 		else \
@@ -220,11 +220,11 @@ gojq: $(LOCALBIN) ## Download gojq locally if necessary.
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
-	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	@test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: ginkgo
 ginkgo: $(LOCALBIN) ## Download ginkgo locally if necessary.
-	if test -s $(GINKGO); then \
+	@if test -s $(GINKGO); then \
 		if [ $(GINKGO_VERSION) = v$(word 3,$(shell $(GINKGO) version)) ]; then \
 			echo "Correct version of Ginkgo is already installed"; \
 		else \
