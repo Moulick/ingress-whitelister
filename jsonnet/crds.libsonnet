@@ -70,6 +70,175 @@
                       ],
                       'x-kubernetes-list-type': 'map',
                     },
+                    providers: {
+                      items: {
+                        properties: {
+                          akamai: {
+                            properties: {
+                              accessTokenSecretRef: {
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                  },
+                                  secret: {
+                                    description: 'SecretReference represents a Secret Reference. It has enough information to retrieve secret in any namespace',
+                                    properties: {
+                                      name: {
+                                        description: 'name is unique within a namespace to reference a secret resource.',
+                                        type: 'string',
+                                      },
+                                      namespace: {
+                                        description: 'namespace defines the space within which the secret name must be unique.',
+                                        type: 'string',
+                                      },
+                                    },
+                                    type: 'object',
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'secret',
+                                ],
+                                type: 'object',
+                              },
+                              clientSecretSecretRef: {
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                  },
+                                  secret: {
+                                    description: 'SecretReference represents a Secret Reference. It has enough information to retrieve secret in any namespace',
+                                    properties: {
+                                      name: {
+                                        description: 'name is unique within a namespace to reference a secret resource.',
+                                        type: 'string',
+                                      },
+                                      namespace: {
+                                        description: 'namespace defines the space within which the secret name must be unique.',
+                                        type: 'string',
+                                      },
+                                    },
+                                    type: 'object',
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'secret',
+                                ],
+                                type: 'object',
+                              },
+                              clientTokenSecretRef: {
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                  },
+                                  secret: {
+                                    description: 'SecretReference represents a Secret Reference. It has enough information to retrieve secret in any namespace',
+                                    properties: {
+                                      name: {
+                                        description: 'name is unique within a namespace to reference a secret resource.',
+                                        type: 'string',
+                                      },
+                                      namespace: {
+                                        description: 'namespace defines the space within which the secret name must be unique.',
+                                        type: 'string',
+                                      },
+                                    },
+                                    type: 'object',
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'secret',
+                                ],
+                                type: 'object',
+                              },
+                              mapId: {
+                                anyOf: [
+                                  {
+                                    type: 'integer',
+                                  },
+                                  {
+                                    type: 'string',
+                                  },
+                                ],
+                                'x-kubernetes-int-or-string': true,
+                              },
+                              serviceConsumerDomainRef: {
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                  },
+                                  secret: {
+                                    description: 'SecretReference represents a Secret Reference. It has enough information to retrieve secret in any namespace',
+                                    properties: {
+                                      name: {
+                                        description: 'name is unique within a namespace to reference a secret resource.',
+                                        type: 'string',
+                                      },
+                                      namespace: {
+                                        description: 'namespace defines the space within which the secret name must be unique.',
+                                        type: 'string',
+                                      },
+                                    },
+                                    type: 'object',
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'secret',
+                                ],
+                                type: 'object',
+                              },
+                            },
+                            type: 'object',
+                          },
+                          cloudflare: {
+                            properties: {
+                              jsonApi: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'jsonApi',
+                            ],
+                            type: 'object',
+                          },
+                          fastly: {
+                            properties: {
+                              jsonApi: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'jsonApi',
+                            ],
+                            type: 'object',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          type: {
+                            enum: [
+                              'akamai',
+                              'cloudflare',
+                              'fastly',
+                            ],
+                            type: 'string',
+                          },
+                        },
+                        required: [
+                          'name',
+                          'type',
+                        ],
+                        type: 'object',
+                      },
+                      type: 'array',
+                      'x-kubernetes-list-map-keys': [
+                        'name',
+                      ],
+                      'x-kubernetes-list-type': 'map',
+                    },
                     rules: {
                       items: {
                         description: 'Rule is mapping of an IPGroup to a set of labels',
@@ -82,6 +251,24 @@
                           },
                           name: {
                             type: 'string',
+                          },
+                          providerSelector: {
+                            items: {
+                              properties: {
+                                name: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'name',
+                              ],
+                              type: 'object',
+                            },
+                            type: 'array',
+                            'x-kubernetes-list-map-keys': [
+                              'name',
+                            ],
+                            'x-kubernetes-list-type': 'map',
                           },
                           selector: {
                             description: 'A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.',
@@ -127,7 +314,6 @@
                           },
                         },
                         required: [
-                          'ipGroupSelector',
                           'name',
                           'selector',
                         ],
@@ -140,7 +326,6 @@
                     },
                   },
                   required: [
-                    'ipGroups',
                     'rules',
                     'whitelistAnnotation',
                   ],
