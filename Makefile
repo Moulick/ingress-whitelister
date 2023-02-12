@@ -1,9 +1,7 @@
-
 # Image URL to use all building/pushing image targets
 IMG ?= docker.io/moulick/ingress-whitelister:latest
 COVERAGE_FILE ?= cover.out
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.24.2
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -36,11 +34,12 @@ JSONNET ?= $(LOCALBIN)/jsonnet
 JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v4.5.5
+ENVTEST_K8S_VERSION = 1.24.2
+KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_GEN_VERSION ?= v0.7.0
 JSONNET_VERSION ?= v0.19.1
-YQ_VERSION ?= v4.29.2
-GINKGO_VERSION ?= v2.4.0
+YQ_VERSION ?= v4.30.8
+GINKGO_VERSION ?= v2.8.0
 
 .PHONY: all
 all: build
@@ -159,11 +158,12 @@ controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary.
 		if [ $(CONTROLLER_GEN_VERSION) = $(word 2,$(shell $(CONTROLLER_GEN) --version)) ]; then \
 			echo "Correct version of controller-gen is already installed"; \
 		else \
-			echo "Wrong version of controller-gen is installed, reinstalling new"; \
+			echo "Wrong version of controller-gen is installed, reinstalling version $(CONTROLLER_GEN_VERSION)"; \
 			GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION); \
 			echo "controller-gen installed"; \
 		fi \
 	else \
+		echo "controller-gen not installed, installing version $(CONTROLLER_GEN_VERSION)"; \
 		GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION); \
 		echo "controller-gen installed"; \
 	fi
@@ -179,6 +179,7 @@ jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
 			echo "Jsonnet installed"; \
 		fi \
 	else \
+		echo "Jsonnet not installed, installing version $(JSONNET_VERSION)"; \
 		GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@$(JSONNET_VERSION); \
 		echo "Jsonnet installed"; \
 	fi
@@ -194,6 +195,7 @@ yq: $(LOCALBIN) ## Download yq locally if necessary.
 			echo "yq installed"; \
 		fi \
 	else \
+		echo "yq not installed, installing version $(YQ_VERSION)"; \
 		GOBIN=$(shell pwd)/bin go install github.com/mikefarah/yq/v4@$(YQ_VERSION); \
 		echo "yq installed"; \
 	fi
@@ -214,6 +216,7 @@ ginkgo: $(LOCALBIN) ## Download ginkgo locally if necessary.
 			echo "Ginkgo installed"; \
 		fi \
 	else \
+		echo "Ginkgo not installed, installing version $(GINKGO_VERSION)"; \
 		GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION); \
 		echo "Ginkgo installed"; \
 	fi
