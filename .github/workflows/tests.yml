@@ -22,11 +22,16 @@ jobs:
           go-version: '1.20'
           check-latest: true
           cache: true
-      - run: go mod tidy && git diff --exit-code go.mod go.sum
-      - run: make generate manifests && git diff --exit-code api/ config/ controllers/
-      - run: make bundle && git diff --exit-code jsonnet/
-      - run: make envtest
-      - run: make test COVER_FILE=cover.out
+      - name: Check go mod tidy
+        run: go mod tidy && git diff --exit-code go.mod go.sum
+      - name: Check missing auto-generated manifests
+        run: make generate manifests && git diff --exit-code api/ config/ controllers/
+      - name: Download envtest-setup
+        run: make envtest
+      - name: Run tests
+        run: make test COVER_FILE=cover.out
+      - name: Check missing changes to jsonnet-crd
+        run: make jsonnet-crd && git diff --exit-code jsonnet/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
