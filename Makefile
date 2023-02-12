@@ -187,7 +187,7 @@ jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
 .PHONY: yq
 yq: $(LOCALBIN) ## Download yq locally if necessary.
 	if test -s $(YQ); then \
-		if [ $(YQ_VERSION) = v$(word 4,$(shell $(YQ) --version)) ]; then \
+		if [ $(YQ_VERSION) = $(word 4,$(shell $(YQ) --version)) ]; then \
 			echo "Correct version of yq is already installed"; \
 		else \
 			echo "Wrong version of yq is installed, reinstalling new"; \

@@ -1,4 +1,4 @@
-name: ginkgo
+name: tests
 
 on:
   - push
@@ -23,7 +23,8 @@ jobs:
           check-latest: true
           cache: true
       - run: go mod tidy && git diff --exit-code go.mod go.sum
-      - run: make generate manifests && git diff --exit-code api/ config/ pkg/
+      - run: make generate manifests && git diff --exit-code api/ config/ controllers/
+      - run: make bundle && git diff --exit-code jsonnet/
       - run: make envtest
       - run: make test COVER_FILE=cover.out
       - name: Upload coverage to Codecov
