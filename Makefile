@@ -29,6 +29,7 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 YQ ?= $(LOCALBIN)/yq
+GOJQ ?= $(LOCALBIN)/gojq
 GINKGO ?= $(LOCALBIN)/ginkgo
 JSONNET ?= $(LOCALBIN)/jsonnet
 JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
@@ -40,6 +41,7 @@ CONTROLLER_GEN_VERSION ?= v0.7.0
 JSONNET_VERSION ?= v0.19.1
 YQ_VERSION ?= v4.30.8
 GINKGO_VERSION ?= v2.8.0
+GOJQ_VERSION ?= v0.12.11
 
 .PHONY: all
 all: build
@@ -86,7 +88,6 @@ test: manifests generate fmt vet envtest ginkgo ## Run tests.
 ##@ Build
 
 .PHONY: build
-# build: generate fmt vet jsonnet-crd ## Build manager binary.
 build: manifests generate fmt vet ## Build manager binary.
 	go build -o bin/manager main.go
 
@@ -120,8 +121,8 @@ crds: manifests kustomize ## Generate CRDs into the bin directory.
 	$(KUSTOMIZE) build config/crd > $(CRD_OUT)
 
 .PHONY: jsonnet-crd
-jsonnet-crd: yq jsonnet crds ## Generate CRDs in the form of jsonnet files.
-	$(YQ) eval -I=0 $(CRD_OUT) -o=json | jq -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
+jsonnet-crd: yq gojq jsonnet crds ## Generate CRDs in the form of jsonnet files.
+	$(YQ) eval -I=0 $(CRD_OUT) -o=json | $(GOJQ) -s . | $(JSONNET) - | $(JSONNET_FMT) --max-blank-lines 1 - -o jsonnet/crds.libsonnet
 
 .PHONY: bundle
 bundle: jsonnet-crd ## Generate deployment files into the bin directory.
@@ -174,7 +175,7 @@ jsonnet: $(LOCALBIN) ## Download jsonnet locally if necessary.
 		if [ $(JSONNET_VERSION) = $(word 6,$(shell $(JSONNET) --version)) ]; then \
 			echo "Correct version of Jsonnet is already installed"; \
 		else \
-			echo "Wrong version of Jsonnet is installed, reinstalling new"; \
+			echo "Wrong version of Jsonnet is installed, reinstalling version $(JSONNET_VERSION)"; \
 			GOBIN=$(LOCALBIN) go install github.com/google/go-jsonnet/cmd/...@$(JSONNET_VERSION); \
 			echo "Jsonnet installed"; \
 		fi \
@@ -190,7 +191,7 @@ yq: $(LOCALBIN) ## Download yq locally if necessary.
 		if [ $(YQ_VERSION) = $(word 4,$(shell $(YQ) --version)) ]; then \
 			echo "Correct version of yq is already installed"; \
 		else \
-			echo "Wrong version of yq is installed, reinstalling new"; \
+			echo "Wrong version of yq is installed, reinstalling version $(YQ_VERSION)"; \
 			GOBIN=$(shell pwd)/bin go install github.com/mikefarah/yq/v4@$(YQ_VERSION); \
 			echo "yq installed"; \
 		fi \
@@ -198,6 +199,22 @@ yq: $(LOCALBIN) ## Download yq locally if necessary.
 		echo "yq not installed, installing version $(YQ_VERSION)"; \
 		GOBIN=$(shell pwd)/bin go install github.com/mikefarah/yq/v4@$(YQ_VERSION); \
 		echo "yq installed"; \
+	fi
+
+.PHONY: gojq
+gojq: $(LOCALBIN) ## Download gojq locally if necessary.
+	if test -s $(JQ); then \
+		if [ $(GOJQ_VERSION) = v$(word 2,$(shell $(GOJQ) --version)) ]; then \
+			echo "Correct version of gojq is already installed"; \
+		else \
+			echo "Wrong version of gojq is installed, reinstalling version $(GOJQ_VERSION)"; \
+			GOBIN=$(shell pwd)/bin go install github.com/itchyny/gojq/cmd/gojq@$(GOJQ_VERSION); \
+			echo "gojq installed"; \
+		fi \
+	else \
+		echo "gojq not installed, installing version $(YQ_VERSION)"; \
+		GOBIN=$(shell pwd)/bin go install github.com/itchyny/gojq/cmd/gojq@$(GOJQ_VERSION); \
+		echo "gojq installed"; \
 	fi
 
 .PHONY: envtest
