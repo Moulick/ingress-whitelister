@@ -14,10 +14,12 @@ builds:
       - linux
       - windows
       - darwin
+      - js
     goarch:
       - amd64
       - arm64
       - arm
+      - wasm
     goarm:
       - "7"
       - "6"
