@@ -1,6 +1,9 @@
+.DEFAULT_GOAL := help
+
 # Image URL to use all building/pushing image targets
 IMG ?= docker.io/moulick/ingress-whitelister:latest
 COVERAGE_FILE ?= cover.out
+GO_MOD=go.mod
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -15,9 +18,6 @@ endif
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
-
-
-##@ Build Dependencies
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
@@ -40,7 +40,7 @@ KUSTOMIZE_VERSION ?= v4.5.7
 CONTROLLER_GEN_VERSION ?= v0.7.0
 JSONNET_VERSION ?= v0.19.1
 YQ_VERSION ?= v4.30.8
-GINKGO_VERSION ?= v2.8.0
+GINKGO_VERSION ?= $(shell cat $(GO_MOD) | grep github.com/onsi/ginkgo | awk '{print $$2}')
 GOJQ_VERSION ?= v0.12.11
 
 .PHONY: all
