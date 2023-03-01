@@ -3,7 +3,7 @@ module github.com/Moulick/ingress-whitelister
 go 1.20
 
 require (
-	github.com/cloudflare/cloudflare-go v0.61.0
+	github.com/cloudflare/cloudflare-go v0.62.0
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.8.4
@@ -73,7 +73,7 @@ require (
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
-	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
+	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
