@@ -1,6 +1,6 @@
 module github.com/Moulick/ingress-whitelister
 
-go 1.20
+go 1.19
 
 require (
 	github.com/cloudflare/cloudflare-go v0.67.0
