@@ -41,7 +41,7 @@ CONTROLLER_GEN_VERSION ?= v0.7.0
 JSONNET_VERSION ?= v0.19.1
 YQ_VERSION ?= v4.30.8
 GINKGO_VERSION ?= $(shell cat $(GO_MOD) | grep github.com/onsi/ginkgo | awk '{print $$2}')
-GOJQ_VERSION ?= v0.12.11
+GOJQ_VERSION ?= v0.12.13
 
 .PHONY: all
 all: build
