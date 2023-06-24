@@ -8,13 +8,8 @@ namespace: security
 # field above.
 namePrefix: ingress-whitelister-
 
-# Labels to add to all resources and selectors.
-commonLabels:
-  app.kubernetes.io/name: ingress-whitelister
-  app.kubernetes.io/instance: ingress-whitelister
-
 resources:
-#  - ../crd
+  #  - ../crd
   - ../rbac
   - ../manager
   # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
@@ -25,11 +20,20 @@ resources:
   # [PROMETHEUS] To enable prometheus monitor, uncomment all sections with 'PROMETHEUS'.
   - ../prometheus
 
-patchesStrategicMerge:
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - includeSelectors: true
+    # Labels to add to all resources and selectors.
+    pairs:
+      app.kubernetes.io/instance: ingress-whitelister
+      app.kubernetes.io/name: ingress-whitelister
+patches:
   # Protect the /metrics endpoint by putting it behind auth.
   # If you want your controller-manager to expose the /metrics
   # endpoint w/o any authn/z, please comment the following line.
-  - manager_auth_proxy_patch.yaml
+  - path: manager_auth_proxy_patch.yaml
+
 
 # Mount the controller config file for loading manager configurations
 # through a ComponentConfig type
