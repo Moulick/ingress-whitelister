@@ -1,5 +1,7 @@
 # Build the manager binary
 FROM docker.io/library/golang:1.20-alpine as builder
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /workspace
 # Copy the Go Modules manifests

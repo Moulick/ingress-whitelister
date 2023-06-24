@@ -35,8 +35,8 @@ JSONNET ?= $(LOCALBIN)/jsonnet
 JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
-ENVTEST_K8S_VERSION = 1.27.2
-KUSTOMIZE_VERSION ?= v4.5.7
+ENVTEST_K8S_VERSION = 1.27.1
+KUSTOMIZE_VERSION ?= v5.1.0
 CONTROLLER_GEN_VERSION ?= v0.12.0
 JSONNET_VERSION ?= v0.20.0
 YQ_VERSION ?= v4.34.1
@@ -44,7 +44,7 @@ GINKGO_VERSION ?= $(shell cat $(GO_MOD) | grep github.com/onsi/ginkgo | awk '{pr
 GOJQ_VERSION ?= v0.12.13
 
 .PHONY: all
-all: build
+all: test build
 
 ##@ General
 
@@ -83,7 +83,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: manifests generate fmt vet envtest ginkgo ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r --trace --race --randomize-all --randomize-suites --fail-fast --coverprofile=${COVERAGE_FILE}
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r --trace --race --randomize-all --randomize-suites --fail-fast --coverprofile=${COVERAGE_FILE}
 
 ##@ Build
 
@@ -149,9 +149,22 @@ undeploy: bundle uninstall ## Undeploy controller from the K8s cluster specified
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
-$(KUSTOMIZE): $(LOCALBIN)
-	@test -s $(KUSTOMIZE) || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
+kustomize: $(LOCALBIN)
+	@if test -s $(KUSTOMIZE); then \
+		if [ $(KUSTOMIZE_VERSION) = $(shell $(KUSTOMIZE) version) ]; then \
+			echo "Correct version of kustomize is already installed"; \
+		else \
+			echo "Wrong version of kustomize is installed, reinstalling version $(KUSTOMIZE_VERSION)"; \
+			rm $(KUSTOMIZE); \
+			curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); \
+			echo "kustomize $(KUSTOMIZE_VERSION) installed"; \
+		fi \
+	else \
+		echo "kustomize not installed, installing version $(KUSTOMIZE_VERSION)"; \
+		curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); \
+		echo "kustomize $(KUSTOMIZE_VERSION) installed"; \
+	fi
+	@#test -s $(KUSTOMIZE) || { curl -s $(KUSTOMIZE_INSTALL_SCRIPT) | bash -s -- $(subst v,,$(KUSTOMIZE_VERSION)) $(LOCALBIN); }
 
 .PHONY: controller-gen
 controller-gen: $(LOCALBIN) ## Download controller-gen locally if necessary.
