@@ -4,9 +4,8 @@
     kind: 'CustomResourceDefinition',
     metadata: {
       annotations: {
-        'controller-gen.kubebuilder.io/version': 'v0.7.0',
+        'controller-gen.kubebuilder.io/version': 'v0.12.0',
       },
-      creationTimestamp: null,
       name: 'ipwhitelistconfigs.ingress.security.moulick',
     },
     spec: {
@@ -93,6 +92,7 @@
                                       },
                                     },
                                     type: 'object',
+                                    'x-kubernetes-map-type': 'atomic',
                                   },
                                 },
                                 required: [
@@ -119,6 +119,7 @@
                                       },
                                     },
                                     type: 'object',
+                                    'x-kubernetes-map-type': 'atomic',
                                   },
                                 },
                                 required: [
@@ -145,6 +146,7 @@
                                       },
                                     },
                                     type: 'object',
+                                    'x-kubernetes-map-type': 'atomic',
                                   },
                                 },
                                 required: [
@@ -182,6 +184,7 @@
                                       },
                                     },
                                     type: 'object',
+                                    'x-kubernetes-map-type': 'atomic',
                                   },
                                 },
                                 required: [
@@ -311,6 +314,7 @@
                               },
                             },
                             type: 'object',
+                            'x-kubernetes-map-type': 'atomic',
                           },
                         },
                         required: [
@@ -339,14 +343,6 @@
           storage: true,
         },
       ],
-    },
-    status: {
-      acceptedNames: {
-        kind: '',
-        plural: '',
-      },
-      conditions: [],
-      storedVersions: [],
     },
   },
 ]
