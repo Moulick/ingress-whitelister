@@ -11,8 +11,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudflare/cloudflare-go v0.70.0 h1:4opGbUygM8DjirUuaz23jn3akuAcnOCEx+0nQtQEcFo=
-github.com/cloudflare/cloudflare-go v0.70.0/go.mod h1:VW6GuazkaZ4xEDkFt24lkXQUsE8q7BiGqDniC2s8WEM=
+github.com/cloudflare/cloudflare-go v0.71.0 h1:tNZWBNgfirbBclBSmRut8zUgdVJFJFkQo2MTXpeuy/M=
+github.com/cloudflare/cloudflare-go v0.71.0/go.mod h1:VW6GuazkaZ4xEDkFt24lkXQUsE8q7BiGqDniC2s8WEM=
 github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4 h1:qMUigiLOZBae2GLSysIvokTAdiSZp7mfe870uMnox4Y=
 github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4/go.mod h1:7r2FvgsNZZcyrI7BqDlHus87wTR217/4EZesce/ZI4U=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
