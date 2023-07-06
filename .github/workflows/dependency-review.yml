@@ -14,6 +14,7 @@ jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
       - name: 'Dependency Review'

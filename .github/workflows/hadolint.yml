@@ -22,17 +22,17 @@ on:
     - cron: '27 20 * * 1'
 
 permissions:
-  contents: read
+  contents: read # for actions/checkout to fetch code
+  security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
 
 jobs:
   hadolint:
     name: Run hadolint scanning
     runs-on: ubuntu-latest
-    permissions:
-      contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
 
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
+
       - name: Checkout code
         uses: actions/checkout@v3
 
