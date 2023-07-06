@@ -5,14 +5,17 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+  packages: write
+#      issues: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-      issues: write
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
