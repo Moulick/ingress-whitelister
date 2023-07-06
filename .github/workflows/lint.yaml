@@ -1,14 +1,11 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# hadoint is a Dockerfile linter written in Haskell
-# that helps you build best practice Docker images.
-# More details at https://github.com/hadolint/hadolint
+---
+name: Lint
 
-name: Hadolint
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
 
-on:
+on: # yamllint disable-line rule:truthy
   push:
     branches:
       - main
@@ -18,21 +15,39 @@ on:
     branches:
       - main
       - master
-  schedule:
-    - cron: '27 20 * * 1'
 
 permissions:
   contents: read # for actions/checkout to fetch code
   security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
 
 jobs:
+  yamllint:
+    name: Run yamllint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - id: yaml-lint
+        name: yaml-lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint.yaml
+
+      - id: yaml-lint-output
+        name: yaml-lint output
+        run: echo ${{ steps.yaml-lint.outputs.logfile }}
+
   hadolint:
     name: Run hadolint scanning
     runs-on: ubuntu-latest
 
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-
       - name: Checkout code
         uses: actions/checkout@v3
 

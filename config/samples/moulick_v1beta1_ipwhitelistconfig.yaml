@@ -1,3 +1,4 @@
+---
 apiVersion: ingress.security.moulick/v1beta1
 kind: IPWhitelistConfig
 metadata:
@@ -18,7 +19,7 @@ spec:
         - siteA-vpn
       providerSelector:
         - name: cloudflare
-#        - name: akamai-site-shield
+        # - name: akamai-site-shield
     - name: internal
       selector:
         matchExpressions:
