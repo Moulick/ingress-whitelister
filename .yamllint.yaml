@@ -14,3 +14,4 @@ rules:
   indentation:
     spaces: consistent
     indent-sequences: whatever
+  document-start: disable

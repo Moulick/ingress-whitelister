@@ -25,7 +25,7 @@ import (
 	knet "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	//+kubebuilder:scaffold:imports
+	// +kubebuilder:scaffold:imports
 
 	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 )
@@ -34,193 +34,194 @@ const RuleSetName = "ipwhitelist-ruleset"
 
 // +kubebuilder:docs-gen:collapse=Imports
 
-var pathType = knet.PathTypeImplementationSpecific
-var preservedAnno = map[string]string{"random-annotation": "should-have-been-preserved"}
-var _ = Describe("IPWhitelistConfig controller", Ordered, func() {
+var (
+	pathType      = knet.PathTypeImplementationSpecific
+	preservedAnno = map[string]string{"random-annotation": "should-have-been-preserved"}
+	_             = Describe("IPWhitelistConfig controller", Ordered, func() {
+		// Define utility constants for object names and testing timeouts/durations and intervals.
+		const (
+			Namespace          = "default"
+			IngressServicePort = 8080
 
-	// Define utility constants for object names and testing timeouts/durations and intervals.
-	const (
-		Namespace          = "default"
-		IngressServicePort = 8080
+			ingressAdminName    = "ingress-admin"
+			ingressAdminPath    = "/"
+			ingressAdminHost    = "admin.example.com"
+			ingressAdminService = "admin-service"
 
-		ingressAdminName    = "ingress-admin"
-		ingressAdminPath    = "/"
-		ingressAdminHost    = "admin.example.com"
-		ingressAdminService = "admin-service"
+			ingressPublicName    = "ingress-public"
+			ingressPublicPath    = "/"
+			ingressPublicHost    = "comehackme.com"
+			ingressPublicService = "example-service"
 
-		ingressPublicName    = "ingress-public"
-		ingressPublicPath    = "/"
-		ingressPublicHost    = "comehackme.com"
-		ingressPublicService = "example-service"
+			ingressToolingName    = "ingress-tooling"
+			ingressToolingPath    = "/"
+			ingressToolingHost    = "grafana.website.com"
+			ingressToolingService = "metrics-dashboard"
 
-		ingressToolingName    = "ingress-tooling"
-		ingressToolingPath    = "/"
-		ingressToolingHost    = "grafana.website.com"
-		ingressToolingService = "metrics-dashboard"
+			whitelistLabel        = "ipwhitelist-type"
+			whitelistAdminValue   = "admin"
+			whitelistPublicValue  = "customerFacing"
+			whitelistToolingValue = "tooling"
 
-		whitelistLabel        = "ipwhitelist-type"
-		whitelistAdminValue   = "admin"
-		whitelistPublicValue  = "customerFacing"
-		whitelistToolingValue = "tooling"
+			SpecProviderCloudFlare = "cloudflare"
+			SpecProviderFastly     = "fastly"
+			SpecProviderAkamai     = "akamai"
 
-		SpecProviderCloudFlare = "cloudflare"
-		SpecProviderFastly     = "fastly"
-		SpecProviderAkamai     = "akamai"
+			timeout                   = time.Second * 20
+			interval                  = time.Millisecond * 250
+			randomWhitelistAnnotation = "random-whitelist-annotation"
+		)
 
-		timeout                   = time.Second * 20
-		interval                  = time.Millisecond * 250
-		randomWhitelistAnnotation = "random-whitelist-annotation"
-	)
-
-	ipwhitelistRuleset := beta1.IPWhitelistConfig{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: beta1.GroupVersion.String(),
-			Kind:       "IPWhitelistConfig",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: RuleSetName,
-		},
-		Spec: beta1.IPWhitelistConfigSpec{
-			WhitelistAnnotation: randomWhitelistAnnotation,
-			Rules: []beta1.Rule{
-				{
-					Name: "admin",
-					Selector: &metav1.LabelSelector{
-						MatchExpressions: []metav1.LabelSelectorRequirement{
+		ipwhitelistRuleset := beta1.IPWhitelistConfig{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: beta1.GroupVersion.String(),
+				Kind:       "IPWhitelistConfig",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: RuleSetName,
+			},
+			Spec: beta1.IPWhitelistConfigSpec{
+				WhitelistAnnotation: randomWhitelistAnnotation,
+				Rules: []beta1.Rule{
+					{
+						Name: "admin",
+						Selector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      whitelistLabel,
+									Operator: metav1.LabelSelectorOpIn,
+									Values: []string{
+										whitelistAdminValue,
+									},
+								},
+							},
+						},
+						IPGroupSelector: []string{
+							"admin",
+							"devopsVPN",
+							"siteA-vpn",
+						},
+						ProviderSelector: []beta1.ProviderSelector{
 							{
-								Key:      whitelistLabel,
-								Operator: metav1.LabelSelectorOpIn,
-								Values: []string{
-									whitelistAdminValue,
-								},
+								Name: SpecProviderCloudFlare,
 							},
 						},
 					},
-					IPGroupSelector: []string{
-						"admin",
-						"devopsVPN",
-						"siteA-vpn",
-					},
-					ProviderSelector: []beta1.ProviderSelector{
-						{
-							Name: SpecProviderCloudFlare,
+					{
+						Name: "internal",
+						Selector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      whitelistLabel,
+									Operator: metav1.LabelSelectorOpIn,
+									Values: []string{
+										whitelistToolingValue,
+										"siteA-vpn",
+									},
+								},
+							},
+						},
+						IPGroupSelector: []string{
+							"admin",
+							"devopsVPN",
 						},
 					},
-				},
-				{
-					Name: "internal",
-					Selector: &metav1.LabelSelector{
-						MatchExpressions: []metav1.LabelSelectorRequirement{
+					{
+						Name: "public",
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{
+								whitelistLabel: whitelistPublicValue,
+							},
+						},
+						ProviderSelector: []beta1.ProviderSelector{
 							{
-								Key:      whitelistLabel,
-								Operator: metav1.LabelSelectorOpIn,
-								Values: []string{
-									whitelistToolingValue,
-									"siteA-vpn",
-								},
+								Name: SpecProviderCloudFlare,
 							},
 						},
 					},
-					IPGroupSelector: []string{
-						"admin",
-						"devopsVPN",
-					},
-				},
-				{
-					Name: "public",
-					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{
-							whitelistLabel: whitelistPublicValue,
+					{
+						Name: "devopsOnly",
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{
+								whitelistLabel: "devopsOnly",
+							},
 						},
-					},
-					ProviderSelector: []beta1.ProviderSelector{
-						{
-							Name: SpecProviderCloudFlare,
+						IPGroupSelector: []string{
+							"devopsVPN",
 						},
 					},
 				},
-				{
-					Name: "devopsOnly",
-					Selector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{
-							whitelistLabel: "devopsOnly",
+				IPGroups: []beta1.IPGroup{
+					{
+						Name:    "admin",
+						Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
+						CIDRS: []string{
+							"192.169.0.1/32",
+							"10.0.3.4/18",
 						},
 					},
-					IPGroupSelector: []string{
-						"devopsVPN",
+					{
+						Name:    "public",
+						Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
+						CIDRS: []string{
+							"0.0.0.0/0",
+							"::/0",
+						},
+					},
+					{
+						Name:    "devopsVPN",
+						Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
+						CIDRS: []string{
+							"176.34.201.164/32",
+						},
+					},
+					{
+						Name:    "siteA-vpn",
+						Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
+						CIDRS: []string{
+							"156.75.1.1/24",
+						},
 					},
 				},
-			},
-			IPGroups: []beta1.IPGroup{
-				{
-					Name:    "admin",
-					Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-					CIDRS: []string{
-						"192.169.0.1/32",
-						"10.0.3.4/18",
-					},
-				},
-				{
-					Name:    "public",
-					Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-					CIDRS: []string{
-						"0.0.0.0/0",
-						"::/0",
-					},
-				},
-				{
-					Name:    "devopsVPN",
-					Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-					CIDRS: []string{
-						"176.34.201.164/32",
-					},
-				},
-				{
-					Name:    "siteA-vpn",
-					Expires: metav1.Time{Time: time.Now().Add(2 * time.Hour)},
-					CIDRS: []string{
-						"156.75.1.1/24",
-					},
-				},
-			},
-			Providers: []beta1.Providers{
-				{
-					Name: SpecProviderCloudFlare,
-					Type: CloudflareProvider.String(),
+				Providers: []beta1.Providers{
+					{
+						Name: SpecProviderCloudFlare,
+						Type: CloudflareProvider.String(),
 
-					Cloudflare: beta1.CloudflareProvider{
-						JsonApi: "https://api.cloudflare.com/client/v4/ips",
+						Cloudflare: beta1.CloudflareProvider{
+							JsonApi: "https://api.cloudflare.com/client/v4/ips",
+						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	ingressAdmin := knet.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        ingressAdminName,
-			Namespace:   Namespace,
-			Annotations: preservedAnno,
-			Labels: map[string]string{
-				whitelistLabel: whitelistAdminValue,
-				"random-label": "random-label-value",
+		ingressAdmin := knet.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        ingressAdminName,
+				Namespace:   Namespace,
+				Annotations: preservedAnno,
+				Labels: map[string]string{
+					whitelistLabel: whitelistAdminValue,
+					"random-label": "random-label-value",
+				},
 			},
-		},
-		Spec: knet.IngressSpec{
-			Rules: []knet.IngressRule{
-				{
-					Host: ingressAdminHost,
-					IngressRuleValue: knet.IngressRuleValue{
-						HTTP: &knet.HTTPIngressRuleValue{
-							Paths: []knet.HTTPIngressPath{
-								{
-									Path:     ingressAdminPath,
-									PathType: &pathType,
-									Backend: knet.IngressBackend{
-										Service: &knet.IngressServiceBackend{
-											Name: ingressAdminService,
-											Port: knet.ServiceBackendPort{
-												Number: IngressServicePort,
+			Spec: knet.IngressSpec{
+				Rules: []knet.IngressRule{
+					{
+						Host: ingressAdminHost,
+						IngressRuleValue: knet.IngressRuleValue{
+							HTTP: &knet.HTTPIngressRuleValue{
+								Paths: []knet.HTTPIngressPath{
+									{
+										Path:     ingressAdminPath,
+										PathType: &pathType,
+										Backend: knet.IngressBackend{
+											Service: &knet.IngressServiceBackend{
+												Name: ingressAdminService,
+												Port: knet.ServiceBackendPort{
+													Number: IngressServicePort,
+												},
 											},
 										},
 									},
@@ -230,31 +231,31 @@ var _ = Describe("IPWhitelistConfig controller", Ordered, func() {
 					},
 				},
 			},
-		},
-	}
-	ingressPublic := knet.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ingressPublicName,
-			Namespace: Namespace,
-			Labels: map[string]string{
-				whitelistLabel: whitelistPublicValue,
+		}
+		ingressPublic := knet.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      ingressPublicName,
+				Namespace: Namespace,
+				Labels: map[string]string{
+					whitelistLabel: whitelistPublicValue,
+				},
 			},
-		},
-		Spec: knet.IngressSpec{
-			Rules: []knet.IngressRule{
-				{
-					Host: ingressPublicHost,
-					IngressRuleValue: knet.IngressRuleValue{
-						HTTP: &knet.HTTPIngressRuleValue{
-							Paths: []knet.HTTPIngressPath{
-								{
-									Path:     ingressPublicPath,
-									PathType: &pathType,
-									Backend: knet.IngressBackend{
-										Service: &knet.IngressServiceBackend{
-											Name: ingressPublicService,
-											Port: knet.ServiceBackendPort{
-												Number: IngressServicePort,
+			Spec: knet.IngressSpec{
+				Rules: []knet.IngressRule{
+					{
+						Host: ingressPublicHost,
+						IngressRuleValue: knet.IngressRuleValue{
+							HTTP: &knet.HTTPIngressRuleValue{
+								Paths: []knet.HTTPIngressPath{
+									{
+										Path:     ingressPublicPath,
+										PathType: &pathType,
+										Backend: knet.IngressBackend{
+											Service: &knet.IngressServiceBackend{
+												Name: ingressPublicService,
+												Port: knet.ServiceBackendPort{
+													Number: IngressServicePort,
+												},
 											},
 										},
 									},
@@ -264,31 +265,31 @@ var _ = Describe("IPWhitelistConfig controller", Ordered, func() {
 					},
 				},
 			},
-		},
-	}
-	ingressTooling := knet.Ingress{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      ingressToolingName,
-			Namespace: Namespace,
-			Labels: map[string]string{
-				whitelistLabel: whitelistToolingValue,
+		}
+		ingressTooling := knet.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      ingressToolingName,
+				Namespace: Namespace,
+				Labels: map[string]string{
+					whitelistLabel: whitelistToolingValue,
+				},
 			},
-		},
-		Spec: knet.IngressSpec{
-			Rules: []knet.IngressRule{
-				{
-					Host: ingressToolingHost,
-					IngressRuleValue: knet.IngressRuleValue{
-						HTTP: &knet.HTTPIngressRuleValue{
-							Paths: []knet.HTTPIngressPath{
-								{
-									Path:     ingressToolingPath,
-									PathType: &pathType,
-									Backend: knet.IngressBackend{
-										Service: &knet.IngressServiceBackend{
-											Name: ingressToolingService,
-											Port: knet.ServiceBackendPort{
-												Number: IngressServicePort,
+			Spec: knet.IngressSpec{
+				Rules: []knet.IngressRule{
+					{
+						Host: ingressToolingHost,
+						IngressRuleValue: knet.IngressRuleValue{
+							HTTP: &knet.HTTPIngressRuleValue{
+								Paths: []knet.HTTPIngressPath{
+									{
+										Path:     ingressToolingPath,
+										PathType: &pathType,
+										Backend: knet.IngressBackend{
+											Service: &knet.IngressServiceBackend{
+												Name: ingressToolingService,
+												Port: knet.ServiceBackendPort{
+													Number: IngressServicePort,
+												},
 											},
 										},
 									},
@@ -298,130 +299,129 @@ var _ = Describe("IPWhitelistConfig controller", Ordered, func() {
 					},
 				},
 			},
-		},
-	}
-	Context("When Ingress have labels", func() {
-		It("Should add the ipwhitelist annotation to the Ingress", func() {
-			By("Creating a IPWhitelistConfig")
-			Expect(k8sClient.Create(ctx, &ipwhitelistRuleset)).Should(Succeed())
+		}
+		Context("When Ingress have labels", func() {
+			It("Should add the ipwhitelist annotation to the Ingress", func() {
+				By("Creating a IPWhitelistConfig")
+				Expect(k8sClient.Create(ctx, &ipwhitelistRuleset)).Should(Succeed())
 
-			ipwhitelistRulesetKey := types.NamespacedName{Name: ipwhitelistRuleset.Name}
-			createdipwhitelistRuleset := &beta1.IPWhitelistConfig{}
-			// check creation
-			Eventually(func(g Gomega) bool {
-				err := k8sClient.Get(ctx, ipwhitelistRulesetKey, createdipwhitelistRuleset)
-				g.Expect(err).ShouldNot(HaveOccurred())
-				return true
-			}, timeout, interval).Should(BeTrue())
+				ipwhitelistRulesetKey := types.NamespacedName{Name: ipwhitelistRuleset.Name}
+				createdipwhitelistRuleset := &beta1.IPWhitelistConfig{}
+				// check creation
+				Eventually(func(g Gomega) bool {
+					err := k8sClient.Get(ctx, ipwhitelistRulesetKey, createdipwhitelistRuleset)
+					g.Expect(err).ShouldNot(HaveOccurred())
+					return true
+				}, timeout, interval).Should(BeTrue())
 
-			// Let's create and ingress with admin label
-			By("Creating a admin ingress")
-			Expect(k8sClient.Create(ctx, &ingressAdmin)).Should(Succeed())
-
-			ingressAdminKey := types.NamespacedName{Name: ingressAdmin.Name, Namespace: ingressAdmin.Namespace}
-			// check creation
-			Eventually(func() bool {
-				createdAdminIngress := &knet.Ingress{}
-				err := k8sClient.Get(ctx, ingressAdminKey, createdAdminIngress)
-				if err != nil {
-					return false
-				}
-				return true
-			}, timeout, interval).Should(BeTrue())
-
-			// Let's create an ingress that is completely public
-			By("Creating a public ingress")
-			Expect(k8sClient.Create(ctx, &ingressPublic)).Should(Succeed())
-
-			ingressPublicKey := types.NamespacedName{Name: ingressPublic.Name, Namespace: ingressPublic.Namespace}
-			// check creation
-			Eventually(func() bool {
-				createdPublicIngress := &knet.Ingress{}
-
-				err := k8sClient.Get(ctx, ingressPublicKey, createdPublicIngress)
-				if err != nil {
-					return false
-				}
-				return true
-			}, timeout, interval).Should(BeTrue())
-
-			// Let's create and ingress that is only supposed to be allowed to devops
-			By("Creating a tooling ingress")
-			Expect(k8sClient.Create(ctx, &ingressTooling)).Should(Succeed())
-
-			ingressToolingKey := types.NamespacedName{Name: ingressTooling.Name, Namespace: ingressTooling.Namespace}
-			// check creation
-			Eventually(func() bool {
-				createdToolingIngress := &knet.Ingress{}
-				err := k8sClient.Get(ctx, ingressToolingKey, createdToolingIngress)
-				if err != nil {
-					return false
-				}
-				return true
-			}, timeout, interval).Should(BeTrue())
-
-			By("Checking that the admin has the ipwhitelist label")
-			labeledAdminIngress := &knet.Ingress{}
-			Eventually(func(g Gomega) map[string]string {
-				err := k8sClient.Get(ctx, ingressAdminKey, labeledAdminIngress)
-				g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
-				return labeledAdminIngress.Annotations
-			}, timeout, interval).Should(HaveKeyWithValue(randomWhitelistAnnotation, "10.0.3.4/18,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,156.75.1.1/24,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,176.34.201.164/32,188.114.96.0/20,190.93.240.0/20,192.169.0.1/32,197.234.240.0/22,198.41.128.0/17"))
-
-			By("Checking that the Public has the ipwhitelist label")
-			labeledPublicIngress := &knet.Ingress{}
-			Eventually(func(g Gomega) map[string]string {
-				err := k8sClient.Get(ctx, ingressPublicKey, labeledPublicIngress)
-				g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
-				return labeledPublicIngress.Annotations
-			}, timeout, interval).Should(HaveKeyWithValue(randomWhitelistAnnotation, "103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17"))
-
-			// Let's make sure our tooling ingress did not loose any other annotation after processing by controller // Keep at end of testing
-			By("Checking that any other annotation should not be removed accidentally")
-			processedAdminIngress := &knet.Ingress{}
-			err := k8sClient.Get(ctx, ingressAdminKey, processedAdminIngress)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(processedAdminIngress.Annotations).Should(HaveKeyWithValue("random-annotation", preservedAnno["random-annotation"]), "any random annotation should be preserved")
-		})
-
-		Context("When label is removed from admin ingress", func() {
-			It("Should remove the ipwhitelist annotation from the Ingress", func() {
+				// Let's create and ingress with admin label
+				By("Creating a admin ingress")
+				Expect(k8sClient.Create(ctx, &ingressAdmin)).Should(Succeed())
 
 				ingressAdminKey := types.NamespacedName{Name: ingressAdmin.Name, Namespace: ingressAdmin.Namespace}
-
-				By("Removing label from the admin ingress")
-				// Using eventually here because the controller and ginkgo both are updating the ingress and we need to handle the conflicting updates
+				// check creation
 				Eventually(func() bool {
-					By("Getting the current admin ingress with annotation")
-					currentAdminIngress := knet.Ingress{}
-
-					Eventually(func(g Gomega) map[string]string {
-						err := k8sClient.Get(ctx, ingressAdminKey, &currentAdminIngress)
-						g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
-						return currentAdminIngress.Annotations
-					}, timeout, interval).Should(HaveKey(randomWhitelistAnnotation))
-
-					delete(currentAdminIngress.Labels, whitelistLabel)
-
-					err := k8sClient.Update(ctx, &currentAdminIngress)
+					createdAdminIngress := &knet.Ingress{}
+					err := k8sClient.Get(ctx, ingressAdminKey, createdAdminIngress)
 					if err != nil {
-						GinkgoWriter.Println("error updating ingress", err)
 						return false
 					}
 					return true
 				}, timeout, interval).Should(BeTrue())
 
-				By("Checking that the admin ingress does not have the ipwhitelist annotation")
+				// Let's create an ingress that is completely public
+				By("Creating a public ingress")
+				Expect(k8sClient.Create(ctx, &ingressPublic)).Should(Succeed())
+
+				ingressPublicKey := types.NamespacedName{Name: ingressPublic.Name, Namespace: ingressPublic.Namespace}
+				// check creation
+				Eventually(func() bool {
+					createdPublicIngress := &knet.Ingress{}
+
+					err := k8sClient.Get(ctx, ingressPublicKey, createdPublicIngress)
+					if err != nil {
+						return false
+					}
+					return true
+				}, timeout, interval).Should(BeTrue())
+
+				// Let's create and ingress that is only supposed to be allowed to devops
+				By("Creating a tooling ingress")
+				Expect(k8sClient.Create(ctx, &ingressTooling)).Should(Succeed())
+
+				ingressToolingKey := types.NamespacedName{Name: ingressTooling.Name, Namespace: ingressTooling.Namespace}
+				// check creation
+				Eventually(func() bool {
+					createdToolingIngress := &knet.Ingress{}
+					err := k8sClient.Get(ctx, ingressToolingKey, createdToolingIngress)
+					if err != nil {
+						return false
+					}
+					return true
+				}, timeout, interval).Should(BeTrue())
+
+				By("Checking that the admin has the ipwhitelist label")
+				labeledAdminIngress := &knet.Ingress{}
 				Eventually(func(g Gomega) map[string]string {
-					labeledAdminIngress := &knet.Ingress{}
 					err := k8sClient.Get(ctx, ingressAdminKey, labeledAdminIngress)
 					g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
 					return labeledAdminIngress.Annotations
-				}, timeout, interval).ShouldNot(HaveKey(randomWhitelistAnnotation))
+				}, timeout, interval).Should(HaveKeyWithValue(randomWhitelistAnnotation, "10.0.3.4/18,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,156.75.1.1/24,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,176.34.201.164/32,188.114.96.0/20,190.93.240.0/20,192.169.0.1/32,197.234.240.0/22,198.41.128.0/17"))
+
+				By("Checking that the Public has the ipwhitelist label")
+				labeledPublicIngress := &knet.Ingress{}
+				Eventually(func(g Gomega) map[string]string {
+					err := k8sClient.Get(ctx, ingressPublicKey, labeledPublicIngress)
+					g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
+					return labeledPublicIngress.Annotations
+				}, timeout, interval).Should(HaveKeyWithValue(randomWhitelistAnnotation, "103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,104.16.0.0/13,104.24.0.0/14,108.162.192.0/18,131.0.72.0/22,141.101.64.0/18,162.158.0.0/15,172.64.0.0/13,173.245.48.0/20,188.114.96.0/20,190.93.240.0/20,197.234.240.0/22,198.41.128.0/17"))
+
+				// Let's make sure our tooling ingress did not loose any other annotation after processing by controller // Keep at end of testing
+				By("Checking that any other annotation should not be removed accidentally")
+				processedAdminIngress := &knet.Ingress{}
+				err := k8sClient.Get(ctx, ingressAdminKey, processedAdminIngress)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(processedAdminIngress.Annotations).Should(HaveKeyWithValue("random-annotation", preservedAnno["random-annotation"]), "any random annotation should be preserved")
+			})
+
+			Context("When label is removed from admin ingress", func() {
+				It("Should remove the ipwhitelist annotation from the Ingress", func() {
+					ingressAdminKey := types.NamespacedName{Name: ingressAdmin.Name, Namespace: ingressAdmin.Namespace}
+
+					By("Removing label from the admin ingress")
+					// Using eventually here because the controller and ginkgo both are updating the ingress and we need to handle the conflicting updates
+					Eventually(func() bool {
+						By("Getting the current admin ingress with annotation")
+						currentAdminIngress := knet.Ingress{}
+
+						Eventually(func(g Gomega) map[string]string {
+							err := k8sClient.Get(ctx, ingressAdminKey, &currentAdminIngress)
+							g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
+							return currentAdminIngress.Annotations
+						}, timeout, interval).Should(HaveKey(randomWhitelistAnnotation))
+
+						delete(currentAdminIngress.Labels, whitelistLabel)
+
+						err := k8sClient.Update(ctx, &currentAdminIngress)
+						if err != nil {
+							GinkgoWriter.Println("error updating ingress", err)
+							return false
+						}
+						return true
+					}, timeout, interval).Should(BeTrue())
+
+					By("Checking that the admin ingress does not have the ipwhitelist annotation")
+					Eventually(func(g Gomega) map[string]string {
+						labeledAdminIngress := &knet.Ingress{}
+						err := k8sClient.Get(ctx, ingressAdminKey, labeledAdminIngress)
+						g.Expect(err).ShouldNot(HaveOccurred(), "Failed to get the ingress")
+						return labeledAdminIngress.Annotations
+					}, timeout, interval).ShouldNot(HaveKey(randomWhitelistAnnotation))
+				})
 			})
 		})
 	})
-})
+)
 
 var _ = Describe("CloudFlare Provider Test", func() {
 	knownIPv4 := []string{
@@ -464,7 +464,7 @@ var _ = Describe("CloudFlare Provider Test", func() {
 })
 
 // TODO: The below test throws a dereference error
-//var _ = Describe("Testing readSecretKey function", Label("secret"), func() {
+// var _ = Describe("Testing readSecretKey function", Label("secret"), func() {
 //	const (
 //		secretName      = "newsecret"
 //		secretNamespace = "default"
@@ -560,7 +560,7 @@ var _ = Describe("CloudFlare Provider Test", func() {
 //			Expect(val).To(Equal(cSecretVal))
 //		})
 //	})
-//})
+// })
 //
 
 var letterRunes = []rune(`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,./;'[]\<>?:"{}|~!@#$%^&*()_+"'`)

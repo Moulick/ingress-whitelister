@@ -69,11 +69,11 @@ func (p ProviderString) String() string {
 	return string(p)
 }
 
-//+kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=ingress.security.moulick,resources=ipwhitelistconfigs/finalizers,verbs=update
 
-//+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -297,7 +297,6 @@ func (r *IPWhitelistConfigReconciler) readSecretKey(ctx context.Context, secretR
 // getCloudFlareCidrs returns the CIDRs for the given CloudFlare provider.
 // This code is copied from https://github.com/cloudflare/cloudflare-go/blob/master/ips.go and modified to take given URL as input.
 func getCloudFlareCidrs(provider beta1.CloudflareProvider) ([]netaddr.IPPrefix, error) {
-
 	var cloudFlareIps []netaddr.IPPrefix
 
 	uri := provider.JsonApi
@@ -341,7 +340,6 @@ func getCloudFlareCidrs(provider beta1.CloudflareProvider) ([]netaddr.IPPrefix, 
 }
 
 func (r *IPWhitelistConfigReconciler) getAkamaiCidrs(ctx context.Context, provider beta1.AkamaiProvider) ([]netaddr.IPPrefix, error) {
-
 	akaClient, err := r.getsiteShieldClient(ctx, provider)
 	if err != nil {
 		return nil, err
@@ -354,7 +352,6 @@ func (r *IPWhitelistConfigReconciler) getAkamaiCidrs(ctx context.Context, provid
 		return siteMap.CurrentCIDRs, nil
 	}
 	return siteMap.ProposedCIDRs, nil
-
 }
 
 func (r *IPWhitelistConfigReconciler) getsiteShieldClient(ctx context.Context, provider beta1.AkamaiProvider) (*siteshield.Client, error) {
@@ -384,7 +381,6 @@ func (r *IPWhitelistConfigReconciler) getsiteShieldClient(ctx context.Context, p
 		}
 	} else {
 		return nil, fmt.Errorf("client secret is required")
-
 	}
 	if provider.AccessToken != nil {
 		if accessToken, err = r.readSecretKey(ctx, provider.AccessToken); err != nil {
@@ -392,7 +388,6 @@ func (r *IPWhitelistConfigReconciler) getsiteShieldClient(ctx context.Context, p
 		}
 	} else {
 		return nil, fmt.Errorf("access token is required")
-
 	}
 	cred := akamai.Credentials{
 		ClientSecret: clientSecret,
