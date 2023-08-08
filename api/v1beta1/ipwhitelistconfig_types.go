@@ -67,14 +67,14 @@ type FastlyProvider struct {
 
 // IPGroup is a group of IPs with a set expiration time
 type IPGroup struct {
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	Name string `json:"name"`
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	Expires metav1.Time `json:"expires"`
 	// TODO: add ip validation
-	//+kubebuilder:validation:Optional
+	// +kubebuilder:validation:Optional
 	CIDRS []string `json:"cidrs,omitempty"`
-	//+kubebuilder:validation:Optional
+	// +kubebuilder:validation:Optional
 }
 
 type ProviderSelector struct {
@@ -84,13 +84,13 @@ type ProviderSelector struct {
 
 // Rule is mapping of an IPGroup to a set of labels
 type Rule struct {
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	Name string `json:"name"`
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	Selector *metav1.LabelSelector `json:"selector"`
-	//+kubebuilder:validation:Optional
+	// +kubebuilder:validation:Optional
 	IPGroupSelector []string `json:"ipGroupSelector,omitempty"`
-	//+kubebuilder:validation:Optional
+	// +kubebuilder:validation:Optional
 	// +listMapKey=name
 	// +listType=map
 	ProviderSelector []ProviderSelector `json:"providerSelector,omitempty"`
@@ -98,13 +98,13 @@ type Rule struct {
 
 // IPWhitelistConfigSpec defines the desired state of IPWhitelistConfig
 type IPWhitelistConfigSpec struct {
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	WhitelistAnnotation string `json:"whitelistAnnotation"`
-	//+kubebuilder:validation:Required
+	// +kubebuilder:validation:Required
 	Rules []Rule `json:"rules"`
 	// +listType=map
 	// +listMapKey=name
-	//+kubebuilder:validation:Optional
+	// +kubebuilder:validation:Optional
 	IPGroups []IPGroup `json:"ipGroups"`
 
 	// +listMapKey=name
@@ -113,8 +113,8 @@ type IPWhitelistConfigSpec struct {
 	Providers []Providers `json:"providers,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // IPWhitelistConfig is the Schema for the ipwhitelistconfigs API
 type IPWhitelistConfig struct {
@@ -124,8 +124,8 @@ type IPWhitelistConfig struct {
 	Spec IPWhitelistConfigSpec `json:"spec,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // IPWhitelistConfigList contains a list of IPWhitelistConfig
 type IPWhitelistConfigList struct {

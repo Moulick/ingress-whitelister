@@ -34,7 +34,7 @@ import (
 
 	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 	"github.com/Moulick/ingress-whitelister/controllers"
-	//+kubebuilder:scaffold:imports
+	// +kubebuilder:scaffold:imports
 )
 
 var (
@@ -46,7 +46,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(beta1.AddToScheme(scheme))
-	//+kubebuilder:scaffold:scheme
+	// +kubebuilder:scaffold:scheme
 }
 
 func main() {
@@ -106,7 +106,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "IPWhitelistConfig")
 		os.Exit(1)
 	}
-	//+kubebuilder:scaffold:builder
+	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
