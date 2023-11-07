@@ -1,17 +1,18 @@
 module github.com/Moulick/ingress-whitelister
 
-go 1.20
+go 1.21
 
 require (
 	github.com/cloudflare/cloudflare-go v0.79.0
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
 	github.com/go-logr/logr v1.2.4
+	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.28.1
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
-	k8s.io/api v0.27.3
-	k8s.io/apimachinery v0.27.3
-	k8s.io/client-go v0.27.3
+	k8s.io/api v0.27.6
+	k8s.io/apimachinery v0.27.6
+	k8s.io/client-go v0.27.6
 	sigs.k8s.io/controller-runtime v0.15.2
 )
 
@@ -41,7 +42,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -69,7 +69,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/ini.v1 v1.66.2 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2 // indirect

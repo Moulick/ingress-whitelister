@@ -45,24 +45,53 @@ type Providers struct {
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Enum=akamai;cloudflare;fastly
-	Type string `json:"type"`
+	// +kubebuilder:validation:Enum=akamai;cloudflare;fastly;github
+	Type ProviderName `json:"type"`
 	// +kubebuilder:validation:Optional
 	Akamai AkamaiProvider `json:"akamai,omitempty"`
 	// +kubebuilder:validation:Optional
 	Cloudflare CloudflareProvider `json:"cloudflare,omitempty"`
 	// +kubebuilder:validation:Optional
 	Fastly FastlyProvider `json:"fastly,omitempty"`
+	// +kubebuilder:validation:Optional
+	Github GithubProvider `json:"github,omitempty"`
 }
+
+type ProviderName string
+
+const (
+	Cloudflare ProviderName = "cloudflare"
+	Akamai     ProviderName = "akamai"
+	Fastly     ProviderName = "fastly"
+	Github     ProviderName = "github"
+)
 
 type CloudflareProvider struct {
 	// +kubebuilder:validation:Required
+	// +kubebuilder:default="https://api.cloudflare.com/client/v4/ips"
+	// JsonApi is the URL of cloudflare to query for the list of IPs
 	JsonApi string `json:"jsonApi"`
 }
 
 type FastlyProvider struct {
 	// +kubebuilder:validation:Required
 	JsonApi string `json:"jsonApi"`
+}
+
+// GithubProvider is a provider for the github meta API
+// +kubebuilder:validation:Optional
+type GithubProvider struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default="https://api.github.com/meta"
+	JsonApi string `json:"jsonApi,omitempty"`
+
+	// Services are names of sections with IP addresses in the api.github.com/meta like "hooks", "web", "api", "actions" etc
+	// +kubebuilder:validation:Required
+	Services []string `json:"services,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default="2022-11-28"
+	APIVersion string `json:"apiVersion,omitempty"`
 }
 
 // IPGroup is a group of IPs with a set expiration time

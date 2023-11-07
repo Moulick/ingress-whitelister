@@ -18,8 +18,10 @@ package controllers
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -59,11 +61,14 @@ var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 	ctx, cancel = context.WithCancel(context.Background())
 
+	Expect(os.Getenv("KUBEBUILDER_ASSETS")).ToNot(BeEmpty(), "KUBEBUILDER_ASSETS environment variable must be set")
+
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
 		ErrorIfCRDPathMissing: true,
 	}
+
 	var err error
 	// cfg is defined in this file globally.
 	cfg, err := testEnv.Start()
@@ -71,6 +76,8 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	err = beta1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
 	err = knet.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -89,6 +96,7 @@ var _ = BeforeSuite(func() {
 		Client:            K8sManager.GetClient(),
 		Scheme:            K8sManager.GetScheme(),
 		IPWhitelistConfig: RuleSetName,
+		RequeueInterval:   5 * time.Second,
 		Log:               ctrl.Log.WithName("controllers test").WithName("IPWhitelistConfig"),
 	}).SetupWithManager(K8sManager)
 	Expect(err).ToNot(HaveOccurred())
@@ -103,7 +111,5 @@ var _ = BeforeSuite(func() {
 var _ = AfterSuite(func() {
 	cancel()
 	By("tearing down the test environment")
-
-	err := testEnv.Stop()
-	Expect(err).NotTo(HaveOccurred())
+	Expect(testEnv.Stop()).To(Succeed())
 })

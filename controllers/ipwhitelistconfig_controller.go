@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -31,6 +30,7 @@ import (
 	"github.com/corbaltcode/go-akamai"
 	"github.com/corbaltcode/go-akamai/siteshield"
 	"github.com/go-logr/logr"
+	jsoniter "github.com/json-iterator/go"
 	"inet.af/netaddr"
 
 	corev1 "k8s.io/api/core/v1"
@@ -42,6 +42,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/Moulick/ingress-whitelister/utils"
+
 	beta1 "github.com/Moulick/ingress-whitelister/api/v1beta1"
 )
 
@@ -50,11 +52,8 @@ var ErrIPWhitelistConfigMissing = errors.New("no IPWhitelistConfig specified")
 type ProviderString string
 
 const (
-	CloudflareProvider ProviderString = "cloudflare"
-	AkamaiProvider     ProviderString = "akamai"
-	FastlyProvider     ProviderString = "fastly"
-	requeueInterval                   = 2 * time.Minute
-	errRequeueInterval                = 5 * time.Second
+	// requeueInterval    = 2 * time.Minute
+	errRequeueInterval = 5 * time.Second
 )
 
 // IPWhitelistConfigReconciler reconciles a IPWhitelistConfig object
@@ -62,6 +61,7 @@ type IPWhitelistConfigReconciler struct {
 	client.Client
 	Scheme            *runtime.Scheme
 	IPWhitelistConfig string
+	RequeueInterval   time.Duration
 	Log               logr.Logger
 }
 
@@ -140,28 +140,41 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				for _, y := range ipWhitelistConfig.Spec.Providers {
 					if x.Name == y.Name {
 						switch y.Type {
-						case CloudflareProvider.String():
+						case beta1.Cloudflare:
 							logo.Info("Provider matched", "provider", y.Name)
 							ips, err := getCloudFlareCidrs(y.Cloudflare)
 							if err != nil {
-								logo.Error(err, "failed to get cloudflare cidrs")
+								logo.Error(err, fmt.Sprintf("failed to get cidrs from %s", y.Name))
 								return ctrl.Result{RequeueAfter: errRequeueInterval}, err
 							}
 							for _, ip := range ips {
 								finalWhiteList = append(finalWhiteList, ip.String())
 							}
-						case AkamaiProvider.String():
+
+						case beta1.Github:
+							logo.Info("Provider matched", "provider", y.Name)
+							ips, err := getGitHubCidrs(y.Github)
+							if err != nil {
+								logo.Error(err, fmt.Sprintf("failed to get cidrs from %s", y.Name))
+								return ctrl.Result{RequeueAfter: errRequeueInterval}, err
+							}
+							for _, ip := range ips {
+								finalWhiteList = append(finalWhiteList, ip.String())
+							}
+
+						case beta1.Akamai:
 							logo.Info("Provider matched", "provider", y.Name)
 							ips, err := r.getAkamaiCidrs(ctx, y.Akamai)
 							if err != nil {
-								logo.Error(err, "failed to get akamai cidrs")
-								// if we fail to get CIDRs from akami, we might want to slow down the reconciliation loop, the api call to akamai is slow
+								logo.Error(err, fmt.Sprintf("failed to get cidrs from %s", y.Name))
+								// if we fail to get CIDRs from akami, slow down the reconciliation loop, the api call to akamai is slow
 								return ctrl.Result{RequeueAfter: 15 * time.Second}, err
 							}
 							for _, ip := range ips {
 								finalWhiteList = append(finalWhiteList, ip.String())
 							}
-						case FastlyProvider.String():
+
+						case beta1.Fastly:
 							logo.Info("Provider matched", "provider", y.Name)
 							logo.Info("fastly provider not implemented yet")
 						}
@@ -179,7 +192,7 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		logo.Info("No rule matched, skipping and/or cleaning up")
 		if ing.Annotations == nil {
 			// if the finalWhiteList is empty and no rule matched, don't need to do anything
-			return ctrl.Result{RequeueAfter: requeueInterval}, nil
+			return ctrl.Result{RequeueAfter: r.RequeueInterval}, nil
 		}
 		// if the annotations are not nil, we can try to delete the annotation
 		var deleted bool
@@ -190,10 +203,10 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			}
 			logo.Info("removed annotation from ingress")
 
-			return ctrl.Result{RequeueAfter: requeueInterval}, nil
+			return ctrl.Result{RequeueAfter: r.RequeueInterval}, nil
 		}
 		// there was nothing to delete or update, we are done here
-		return ctrl.Result{RequeueAfter: requeueInterval}, nil
+		return ctrl.Result{RequeueAfter: r.RequeueInterval}, nil
 	}
 	// Here we have a whitelist and we might need to update the annotations
 	// sort the finalWhiteList
@@ -210,11 +223,11 @@ func (r *IPWhitelistConfigReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			return ctrl.Result{RequeueAfter: errRequeueInterval}, err
 		}
 		logo.Info("updated the ingress")
-		return ctrl.Result{RequeueAfter: requeueInterval}, nil
+		return ctrl.Result{RequeueAfter: r.RequeueInterval}, nil
 	}
 
 	logo.Info("ingress already up-to-date")
-	return ctrl.Result{RequeueAfter: requeueInterval}, nil
+	return ctrl.Result{RequeueAfter: r.RequeueInterval}, nil
 }
 
 // getIPWhitelistConfig retrieves the ruleSet configuration.
@@ -311,7 +324,7 @@ func getCloudFlareCidrs(provider beta1.CloudflareProvider) ([]netaddr.IPPrefix, 
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 	var cresp cloudflare.IPsResponse
-	err = json.Unmarshal(body, &cresp)
+	err = jsoniter.Unmarshal(body, &cresp)
 	if err != nil {
 		return nil, err
 	}
@@ -337,6 +350,50 @@ func getCloudFlareCidrs(provider beta1.CloudflareProvider) ([]netaddr.IPPrefix, 
 	}
 
 	return cloudFlareIps, nil
+}
+
+func getGitHubCidrs(provider beta1.GithubProvider) ([]netaddr.IPPrefix, error) {
+	var githubIPs []netaddr.IPPrefix
+
+	req, err := http.NewRequest(http.MethodGet, provider.JsonApi, nil) //nolint:gosec
+	if err != nil {
+		return nil, fmt.Errorf("client: could not create request: %s\n", err)
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", provider.APIVersion)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make http call to github: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	cresp, err := utils.ConvertFromJSON(string(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response body from GitHub Meta API: %v", err)
+	}
+	// check if the services given in the custom resource are present in the response
+	ok, notFound := utils.ArrayInArray(provider.Services, cresp.Keys())
+	if !ok {
+		return nil, fmt.Errorf("failed to %s in GitHub Meta API Response %s", notFound, cresp.Keys())
+	}
+	for _, services := range provider.Services {
+		var serviceIPs []string
+		cresp.Get(services).ToVal(&serviceIPs)
+		for _, ip := range serviceIPs {
+			parsedIPPrefix, err := netaddr.ParseIPPrefix(ip)
+			if err != nil {
+				return nil, fmt.Errorf("unable to parse ip %s: %v", ip, err)
+			}
+			githubIPs = append(githubIPs, parsedIPPrefix)
+		}
+	}
+
+	return githubIPs, nil
 }
 
 func (r *IPWhitelistConfigReconciler) getAkamaiCidrs(ctx context.Context, provider beta1.AkamaiProvider) ([]netaddr.IPPrefix, error) {

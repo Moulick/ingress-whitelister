@@ -182,7 +182,7 @@ docker_manifests:
       - quay.io/moulick/{{ .ProjectName }}:latest-armv7
       # - quay.io/moulick/{{ .ProjectName }}:latest-armv6
 
-  # Github Container Registry
+  # GitHub Container Registry
   - name_template: ghcr.io/moulick/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
       - ghcr.io/moulick/{{ .ProjectName }}:{{ .Tag }}-amd64

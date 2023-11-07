@@ -1,0 +1,70 @@
+---
+apiVersion: ingress.security.moulick/v1beta1
+kind: IPWhitelistConfig
+metadata:
+  name: ipwhitelist-ruleset
+spec:
+  whitelistAnnotation: "ingress.kubernetes.io/whitelist-source-range"
+  rules:
+    - name: admin
+      selector:
+        matchExpressions:
+          - key: ipwhitelist-type
+            operator: In
+            values:
+              - "admin"
+      ipGroupSelector:
+        - admin
+        - devopsVPN
+        - siteA-vpn
+      providerSelector:
+        - name: source
+        # - name: akamai-site-shield
+    - name: internal
+      selector:
+        matchExpressions:
+          - key: ipwhitelist-type
+            operator: In
+            values:
+              - tooling
+              - siteA-vpn
+      ipGroupSelector:
+        - admin
+        - devopsVPN
+    - name: public
+      selector:
+        matchLabels:
+          ipwhitelist-type: customerFacing
+      providerSelector:
+        - name: source
+    - name: devopsOnly
+      selector:
+        matchLabels:
+          ipwhitelist-type: "devopsOnly"
+      ipGroupSelector:
+        - devopsVPN
+  ipGroups:
+    - name: admin
+      cidrs:
+        - 192.169.0.1/32
+        - 10.0.3.4/18
+      expires: 2025-12-11T16:32:29Z
+    - name: public
+      cidrs:
+        - 0.0.0.0/0
+        - ::/0
+      expires: 2025-12-11T16:32:29Z
+    - name: devopsVPN
+      cidrs:
+        - 176.34.201.164/32
+      expires: 2025-12-11T16:32:29Z
+    - name: siteA-vpn
+      cidrs:
+        - 156.75.1.1/24
+      expires: 2025-12-11T16:32:29Z
+  providers:
+    - name: source
+      type: github
+      github:
+        services:
+          - hooks
