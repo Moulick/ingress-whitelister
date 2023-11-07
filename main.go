@@ -59,12 +59,13 @@ func main() {
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	// Deprecated: this port is does not do anything as the operator is not a server
 	flag.IntVar(&port, "port", 9443, "The port for the operator") //nolint:gomnd
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&ipWhitelistConfig, "ip-whitelist-config", "", "The name of the IPWhitelistConfig resource")
-	flag.DurationVar(&requeueInterval, "requeue-interval", 5*time.Minute, "The duration until the next untriggered reconciliation run")
+	flag.DurationVar(&requeueInterval, "requeue-interval", 1*time.Minute, "The duration until the next untriggered reconciliation run")
 
 	opts := zap.Options{
 		Development: true,
@@ -84,13 +85,12 @@ func main() {
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   port,
+		Scheme:             scheme,
+		MetricsBindAddress: metricsAddr,
+		// Port:                   port,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "460b0067.moulick",
-		SyncPeriod:             &requeueInterval,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -101,6 +101,7 @@ func main() {
 		Client:            mgr.GetClient(),
 		Scheme:            mgr.GetScheme(),
 		IPWhitelistConfig: ipWhitelistConfig,
+		RequeueInterval:   requeueInterval,
 		Log:               ctrl.Log.WithName("controllers").WithName("IPWhitelistConfig"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "IPWhitelistConfig")

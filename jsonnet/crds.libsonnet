@@ -199,6 +199,8 @@
                           cloudflare: {
                             properties: {
                               jsonApi: {
+                                default: 'https://api.cloudflare.com/client/v4/ips',
+                                description: 'JsonApi is the URL of cloudflare to query for the list of IPs',
                                 type: 'string',
                               },
                             },
@@ -218,6 +220,27 @@
                             ],
                             type: 'object',
                           },
+                          github: {
+                            description: 'GithubProvider is a provider for the github meta API',
+                            properties: {
+                              apiVersion: {
+                                default: '2022-11-28',
+                                type: 'string',
+                              },
+                              jsonApi: {
+                                default: 'https://api.github.com/meta',
+                                type: 'string',
+                              },
+                              services: {
+                                description: 'Services are names of sections with IP addresses in the api.github.com/meta like "hooks", "web", "api", "actions" etc',
+                                items: {
+                                  type: 'string',
+                                },
+                                type: 'array',
+                              },
+                            },
+                            type: 'object',
+                          },
                           name: {
                             type: 'string',
                           },
@@ -226,6 +249,7 @@
                               'akamai',
                               'cloudflare',
                               'fastly',
+                              'github',
                             ],
                             type: 'string',
                           },

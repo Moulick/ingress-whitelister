@@ -35,11 +35,12 @@ JSONNET ?= $(LOCALBIN)/jsonnet
 JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
-ENVTEST_K8S_VERSION = 1.27.1
-KUSTOMIZE_VERSION ?= v5.1.0
+ENVTEST_K8S_VERSION ?= 1.27.1
+SETUP_ENVTEST_VERSION ?= latest
+KUSTOMIZE_VERSION ?= v5.1.1
 CONTROLLER_GEN_VERSION ?= v0.12.0
 JSONNET_VERSION ?= v0.20.0
-YQ_VERSION ?= v4.34.1
+YQ_VERSION ?= v4.35.1
 GINKGO_VERSION ?= $(shell cat $(GO_MOD) | grep github.com/onsi/ginkgo | awk '{print $$2}')
 GOJQ_VERSION ?= v0.12.13
 
@@ -233,7 +234,7 @@ gojq: $(LOCALBIN) ## Download gojq locally if necessary.
 .PHONY: envtest
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
-	@test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+	@test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(SETUP_ENVTEST_VERSION)
 
 .PHONY: ginkgo
 ginkgo: $(LOCALBIN) ## Download ginkgo locally if necessary.
