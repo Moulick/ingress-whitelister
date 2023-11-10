@@ -5,9 +5,9 @@ go 1.21
 require (
 	github.com/cloudflare/cloudflare-go v0.81.0
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
-	github.com/go-logr/logr v1.2.4
+	github.com/go-logr/logr v1.3.0
 	github.com/json-iterator/go v1.1.12
-	github.com/onsi/ginkgo/v2 v2.13.0
+	github.com/onsi/ginkgo/v2 v2.13.1
 	github.com/onsi/gomega v1.30.0
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
 	k8s.io/api v0.27.7
@@ -60,11 +60,11 @@ require (
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230525183740-e7c30c78aeb2 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.4.0 // indirect
-	golang.org/x/tools v0.12.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
