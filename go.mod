@@ -3,7 +3,7 @@ module github.com/Moulick/ingress-whitelister
 go 1.21
 
 require (
-	github.com/cloudflare/cloudflare-go v0.83.0
+	github.com/cloudflare/cloudflare-go v0.84.0
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
 	github.com/go-logr/logr v1.3.0
 	github.com/json-iterator/go v1.1.12
