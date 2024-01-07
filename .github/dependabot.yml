@@ -5,14 +5,16 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
-schedule:
-  interval: daily
+
 enable-beta-ecosystems: true
+
 updates:
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     open-pull-requests-limit: 20
+    schedule:
+      interval: "weekly"
     commit-message:
       prefix: ":github:"
 
@@ -20,6 +22,8 @@ updates:
   - package-ecosystem: "docker"
     directory: /
     open-pull-requests-limit: 20
+    schedule:
+      interval: "daily"
     commit-message:
       prefix: ":whale:"
 
@@ -27,6 +31,8 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     open-pull-requests-limit: 20
+    schedule:
+      interval: "daily"
     commit-message:
       prefix: ":seedling:"
 
