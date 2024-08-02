@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Run test
     steps:
+      - run: cat ~/.docker/config.json
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
