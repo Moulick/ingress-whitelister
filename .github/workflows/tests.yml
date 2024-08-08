@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Run test
     steps:
+      - run: kustomize version
       - name: Checkout
         uses: actions/checkout@v4
         with:
