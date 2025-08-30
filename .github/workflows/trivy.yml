@@ -41,7 +41,6 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'rootfs'
-          scan-ref: '/github/workspace/'
           ignore-unfixed: false
           format: 'sarif'
           output: 'trivy-rootfs.sarif'
