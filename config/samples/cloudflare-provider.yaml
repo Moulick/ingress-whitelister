@@ -64,8 +64,6 @@ spec:
       expires: 2025-12-11T16:32:29Z
   providers:
     - name: source
-      type: github
-      github:
-        jsonApi: https://api.github.com/meta
-        services:
-          - hooks
+      type: cloudflare
+      cloudflare:
+        jsonApi: https://api.cloudflare.com/client/v4/ips

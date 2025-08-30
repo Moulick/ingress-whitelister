@@ -4,7 +4,7 @@
     kind: 'CustomResourceDefinition',
     metadata: {
       annotations: {
-        'controller-gen.kubebuilder.io/version': 'v0.15.0',
+        'controller-gen.kubebuilder.io/version': 'v0.19.0',
       },
       name: 'ipwhitelistconfigs.ingress.security.moulick',
     },
@@ -43,7 +43,6 @@
                         description: 'IPGroup is a group of IPs with a set expiration time',
                         properties: {
                           cidrs: {
-                            description: 'TODO: add ip validation',
                             items: {
                               type: 'string',
                             },
@@ -221,7 +220,7 @@
                             type: 'object',
                           },
                           github: {
-                            description: 'GithubProvider is a provider for the github meta API',
+                            description: 'GithubProvider is a provider for the GitHub meta API',
                             properties: {
                               apiVersion: {
                                 default: '2022-11-28',
@@ -239,6 +238,9 @@
                                 type: 'array',
                               },
                             },
+                            required: [
+                              'services',
+                            ],
                             type: 'object',
                           },
                           name: {
