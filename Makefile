@@ -35,17 +35,17 @@ JSONNET ?= $(LOCALBIN)/jsonnet
 JSONNET_FMT ?= $(LOCALBIN)/jsonnetfmt
 
 ## Tool Versions
-ENVTEST_K8S_VERSION ?= 1.27.1
+ENVTEST_K8S_VERSION ?= 1.32.0
 SETUP_ENVTEST_VERSION ?= latest
-KUSTOMIZE_VERSION ?= v5.1.1
-CONTROLLER_GEN_VERSION ?= v0.15.0
-JSONNET_VERSION ?= v0.20.0
-YQ_VERSION ?= v4.35.1
+KUSTOMIZE_VERSION ?= v5.7.1
+CONTROLLER_GEN_VERSION ?= v0.19.0
+JSONNET_VERSION ?= v0.21.0
+YQ_VERSION ?= v4.47.1
 GINKGO_VERSION ?= $(shell cat $(GO_MOD) | grep github.com/onsi/ginkgo | awk '{print $$2}')
-GOJQ_VERSION ?= v0.12.13
+GOJQ_VERSION ?= v0.12.17
 
 .PHONY: all
-all: test build
+all: test build bundle
 
 ##@ General
 

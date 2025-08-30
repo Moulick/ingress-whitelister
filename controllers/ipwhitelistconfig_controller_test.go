@@ -127,19 +127,6 @@ var (
 			},
 		},
 	}
-	github = beta1.Rule{
-		Name: "public",
-		Selector: &metav1.LabelSelector{
-			MatchLabels: map[string]string{
-				whitelistLabel: whitelistPublicValue,
-			},
-		},
-		ProviderSelector: []beta1.ProviderSelector{
-			{
-				Name: SpecProviderGitHub,
-			},
-		},
-	}
 	devopsOnlyRule = beta1.Rule{
 		Name: "devopsOnly",
 		Selector: &metav1.LabelSelector{
@@ -202,9 +189,24 @@ var _ = Describe("IPWhitelistConfig controller Cloudflare", Ordered, func() {
 				{
 					Name: SpecProviderCloudFlare,
 					Type: beta1.Cloudflare,
-
 					Cloudflare: beta1.CloudflareProvider{
 						JsonApi: "https://api.cloudflare.com/client/v4/ips",
+					},
+					Github: beta1.GithubProvider{
+						JsonApi: "https://api.github.com/meta",
+						Services: []string{
+							"hooks",
+						},
+					},
+				},
+				{
+					Name: SpecProviderGitHub,
+					Type: beta1.Github,
+					Github: beta1.GithubProvider{
+						JsonApi: "https://api.github.com/meta",
+						Services: []string{
+							"hooks",
+						},
 					},
 				},
 			},
@@ -319,6 +321,7 @@ var _ = Describe("IPWhitelistConfig controller Cloudflare", Ordered, func() {
 		It("Should add the ipwhitelist annotation to the Ingress", func() {
 			By("Creating a IPWhitelistConfig")
 			Expect(k8sClient.Create(ctx, &ipwhitelistrulesetCloudflare)).Should(Succeed())
+			GinkgoWriter.Println("Created IPWhitelistConfig")
 
 			ipwhitelistRulesetKey := types.NamespacedName{Name: ipwhitelistrulesetCloudflare.Name}
 			createdipwhitelistRuleset := &beta1.IPWhitelistConfig{}

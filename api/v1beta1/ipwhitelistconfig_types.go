@@ -78,7 +78,7 @@ type FastlyProvider struct {
 	JsonApi string `json:"jsonApi"`
 }
 
-// GithubProvider is a provider for the github meta API
+// GithubProvider is a provider for the GitHub meta API
 // +kubebuilder:validation:Optional
 type GithubProvider struct {
 	// +kubebuilder:validation:Optional
@@ -89,8 +89,8 @@ type GithubProvider struct {
 	// +kubebuilder:validation:Required
 	Services []string `json:"services,omitempty"`
 
-	// +kubebuilder:validation:Optional
 	// +kubebuilder:default="2022-11-28"
+	// +kubebuilder:validation:Optional
 	APIVersion string `json:"apiVersion,omitempty"`
 }
 
