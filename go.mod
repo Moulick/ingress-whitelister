@@ -7,7 +7,7 @@ require (
 	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
 	github.com/go-logr/logr v1.4.3
 	github.com/json-iterator/go v1.1.12
-	github.com/onsi/ginkgo/v2 v2.25.3
+	github.com/onsi/ginkgo/v2 v2.27.1
 	github.com/onsi/gomega v1.38.2
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a
 	k8s.io/api v0.27.7
@@ -59,8 +59,10 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230525183740-e7c30c78aeb2 // indirect
+	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
