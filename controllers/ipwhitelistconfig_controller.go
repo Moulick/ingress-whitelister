@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"sort"
 	"strings"
 	"time"
@@ -405,10 +406,25 @@ func (r *IPWhitelistConfigReconciler) getAkamaiCidrs(ctx context.Context, provid
 	if err != nil {
 		return nil, err
 	}
+
+	var cidrs []netip.Prefix
 	if siteMap.ProposedCIDRs == nil || len(siteMap.ProposedCIDRs) == 0 {
-		return siteMap.CurrentCIDRs, nil
+		cidrs = siteMap.CurrentCIDRs
+	} else {
+		cidrs = siteMap.ProposedCIDRs
 	}
-	return siteMap.ProposedCIDRs, nil
+
+	// Convert from []netip.Prefix to []netaddr.IPPrefix
+	result := make([]netaddr.IPPrefix, 0, len(cidrs))
+	for _, cidr := range cidrs {
+		ipPrefix, err := netaddr.ParseIPPrefix(cidr.String())
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert CIDR %s: %w", cidr.String(), err)
+		}
+		result = append(result, ipPrefix)
+	}
+
+	return result, nil
 }
 
 func (r *IPWhitelistConfigReconciler) getsiteShieldClient(ctx context.Context, provider beta1.AkamaiProvider) (*siteshield.Client, error) {
