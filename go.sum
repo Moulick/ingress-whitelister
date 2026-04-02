@@ -12,8 +12,8 @@ github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudflare/cloudflare-go v0.116.0 h1:iRPMnTtnswRpELO65NTwMX4+RTdxZl+Xf/zi+HPE95s=
 github.com/cloudflare/cloudflare-go v0.116.0/go.mod h1:Ds6urDwn/TF2uIU24mu7H91xkKP8gSAHxQ44DSZgVmU=
-github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4 h1:qMUigiLOZBae2GLSysIvokTAdiSZp7mfe870uMnox4Y=
-github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4/go.mod h1:7r2FvgsNZZcyrI7BqDlHus87wTR217/4EZesce/ZI4U=
+github.com/corbaltcode/go-akamai v0.1.1 h1:o8ac6935rmX5R3zZfpFHLKsFBoBrwvlN3AG8d2tzNzs=
+github.com/corbaltcode/go-akamai v0.1.1/go.mod h1:cSOZUjfpZKYTTAVCaO8iuRzD5WIp9/4raaIIsbYPvwA=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
