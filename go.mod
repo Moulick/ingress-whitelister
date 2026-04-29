@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/cloudflare/cloudflare-go v0.116.0
-	github.com/corbaltcode/go-akamai v0.0.0-20220311185528-0e6d0f5bd2b4
+	github.com/corbaltcode/go-akamai v0.1.1
 	github.com/go-logr/logr v1.4.3
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo/v2 v2.28.1
