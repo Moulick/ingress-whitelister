@@ -1,7 +1,7 @@
 # Ingress Whitelister
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/Moulick/ingress-whitelister?style=for-the-badge)](https://goreportcard.com/report/github.com/Moulick/ingress-whitelister)
-[![Build status](https://img.shields.io/github/workflow/status/moulick/ingress-whitelister/goreleaser?style=for-the-badge)](https://github.com/moulick/ingress-whitelister/actions?workflow=goreleaser)
+[![Build status](https://img.shields.io/github/actions/workflow/status/moulick/ingress-whitelister/goreleaser-workflow.yml?style=for-the-badge)](https://github.com/moulick/ingress-whitelister/actions/workflows/goreleaser-workflow.yml)
 [![Release](https://img.shields.io/github/v/release/moulick/ingress-whitelister?style=for-the-badge)](https://github.com/moulick/ingress-whitelister/releases/latest)
 [![Software License](https://img.shields.io/github/license/moulick/ingress-whitelister?style=for-the-badge)](/LICENSE.md)
 [![Go Report card](https://goreportcard.com/badge/github.com/moulick/ingress-whitelister?style=for-the-badge)](https://goreportcard.com/report/github.com/moulick/ingress-whitelister)
@@ -89,4 +89,3 @@ You need to provide the following configuration to Akamai provider. The API keys
 - golang environment
 - docker (used for creating container images, etc.)
 - jq
-
